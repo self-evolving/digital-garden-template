@@ -186,10 +186,10 @@ gh variable set AGENT_PREVIEW_POLICY --body all --repo OWNER/REPO
 Within an enabled repository:
 
 - Every **agent** pull request (head branch under `agent/`) previews automatically — no label needed.
-- Add the `sepo-preview` label to preview any other pull request.
+- Add the `sepo-preview` label to preview any other **same-repo** pull request. Fork pull requests are never previewed (they cannot mint OIDC tokens).
 - Add the `no-preview` label to skip a pull request that would otherwise preview.
 
-This requires the Sepo GitHub App on the repository (it mints a short-lived read-only token to fetch the build artifact). Setting the policy to `off` stops new deploys but does not retract previews already live; close the pull request to tear one down.
+Label and policy changes affect **future** deploys only — they do not retract a preview that is already live. To take a live preview down, **close the pull request** (teardown runs on close). This requires the Sepo GitHub App on the repository (it mints a short-lived, read-only token to fetch the build artifact).
 
 ## Sepo controls
 
