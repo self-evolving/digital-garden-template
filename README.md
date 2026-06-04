@@ -191,6 +191,8 @@ Within an enabled repository:
 
 Label and policy changes affect **future** deploys only — they do not retract a preview that is already live. To take a live preview down, **close the pull request** (teardown runs on close). This requires the Sepo GitHub App on the repository (it mints a short-lived, read-only token to fetch the build artifact).
 
+If this repository is also connected to a platform that builds its own pull-request previews — for example, Vercel's Git integration auto-deploys every PR — enable only one of them to avoid two preview URLs per pull request. Set `AGENT_PREVIEW_POLICY=off` to defer to that platform, or disable the platform's preview deployments to let Sepo own them. Sepo previews and production hosting do not otherwise interfere: Sepo only deploys PR previews to `*.surge.sh` and never touches the production deploy of the default branch. Sepo previews are most useful where the repository has no built-in PR previews (such as GitHub Pages) or where you want one consistent preview across many repositories.
+
 ## Sepo controls
 
 Sepo workflows can be paused without disabling GitHub Actions globally by setting the repository variable `AGENT_ENABLED=false`. Remove the variable or set it to `true` to allow packaged `agent-*.yml` jobs to run again.
