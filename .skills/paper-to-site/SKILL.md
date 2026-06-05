@@ -91,6 +91,8 @@ tags:
 ---
 ```
 
+List the complete author set in `authors` for the root paper note; the single entry above is only for brevity. Keep `year`, `venue`, `url`, and `doi` populated from the source so the page header and citation metadata stay complete.
+
 For section pages:
 
 ```yaml
@@ -110,6 +112,7 @@ Use lightweight graph type tags deliberately:
 - paper-section pages may also include `paper-section`
 - synthesis notes include `note`
 - do not invent `note` tags if no synthesis-note pages exist
+- when the site mixes papers and synthesis notes, enabling graph tag nodes (`showTags: true` in the graph plugin options) lets the graph group by `#paper`/`#note`; a single hosted-paper site (where every page is `#paper`) should keep tag nodes hidden and rely on the `paper` styling hint to avoid one giant hub node
 
 ## Reference and link cleanup
 
@@ -121,6 +124,33 @@ Clean converted LaTeX artifacts aggressively:
 - Preserve real bibliography citations like `[@key]`; the citation plugin should render those.
 - Fix relative image links after moving section files.
 - Figure placement does not need to match LaTeX float placement exactly; source-order placement is usually good enough for a Markdown site.
+
+## Figures and captions
+
+Render each figure with its caption visible: LaTeX captions carry real content, often including cross-references.
+
+- A semantic `<figure>` with `<figcaption>` renders cleanly and keeps the caption visually distinct from body text:
+
+  ```html
+  <figure>
+    <img src="../figures/02_hci.png" alt="HCI roadmap" />
+    <figcaption>
+      We can draw on the field of HCI ... <a href="01-design">Understanding the Who</a>.
+    </figcaption>
+  </figure>
+  ```
+
+- A Markdown image plus a bold-led caption paragraph also works and stays pure Markdown:
+
+  ```markdown
+  ![](../figures/02_hci.png)
+
+  **Figure.** We can draw on the field of HCI ...
+  ```
+
+- Do not wrap an entire caption in `*...*` or `_..._`: captions frequently contain `\emph{...}` that becomes nested emphasis and breaks rendering. Keep caption emphasis inline instead.
+- Rewrite `\ref{fig:...}` and `\ref{subsec:...}` inside captions into the same descriptive links used in body text.
+- Use lowercase, deployment-safe filenames under `content/<paper-slug>/figures/`, with `../figures/<name>` relative links from section and subsection pages.
 
 ## Backlink hygiene
 
@@ -139,6 +169,15 @@ Use frontmatter `title:` as the single source of truth.
 - Let the page header render the title from frontmatter.
 - Demote non-page-title top-level headings to `##` or lower.
 
+## Section index pages
+
+Each `content/<paper-slug>/<NN-section>/index.md` is a chapter landing. Give it:
+
+- the chapter's intro prose and overview figure, converted from the section's lead `.tex`, and
+- a short `## Subsections` list linking the chapter's child pages in reading order.
+
+The `## Subsections` list is page content — a chapter table of contents — not a per-page parent/next/previous navigation bar, so it is consistent with the backlink-hygiene rules above. It gives the landing real text and backlinks even when the sidebar is collapsed.
+
 ## Root page and layout
 
 The root page `/` should look like a normal content/library page, not a special landing page.
@@ -152,7 +191,37 @@ Check that `/` has the same:
 - citekey and source-link display for papers
 - graph/backlinks behavior when enabled
 
-If the Quartz config or styles exclude `index` from these components, adjust the condition so the root paper note renders with the same chrome as section pages.
+If the Quartz config or styles exclude `index` from these components, adjust the gating so the root paper note renders with the same chrome as section pages.
+
+In this template the gating lives in two conditions, both of which drop the root via `slug === "index"`:
+
+- `library-page` (a custom condition in `quartz.ts`) gates the explorer sidebar, the paper page header, and comments.
+- the builtin `not-index` gates the graph, backlinks, table of contents, search, page title, and dark-mode toolbar.
+
+Relax both so the root counts as a content page when it hosts a paper. Gate on `type: paper` so a non-paper root keeps its bare-landing behavior:
+
+```ts
+const isPaperNote = (page) => page.fileData.frontmatter?.type === "paper"
+
+const isLibraryPage = (page) => {
+  const slug = page.fileData.slug
+  if (!slug || slug.startsWith("tags/")) return false
+  if (slug === "index") return isPaperNote(page) // root is a content page when it hosts a paper
+  return true
+}
+registerCondition("library-page", (page) => isLibraryPage(page))
+registerCondition("not-index", (page) => page.fileData.slug !== "index" || isPaperNote(page))
+```
+
+Then rebuild and confirm in the emitted HTML that `/index.html` contains the explorer sidebar, paper page header, graph, and dark-mode toggle, matching a section page.
+
+Conditions are necessary but not sufficient — two more layers can keep pages looking like bare landings even after the conditions pass. Check all three:
+
+- **Component conditions** (above): make the root and paper pages eligible for each component.
+- **Layout positions.** `layout.byPageType` in `quartz.config.yaml` can clear a whole region for a page type. A `folder.positions.right: []` override drops the entire right sidebar — graph, backlinks, table of contents — from folder/index pages (including every section index), regardless of conditions. Remove it so section index pages show the right sidebar.
+- **Index-specific CSS.** The stylesheet may special-case the landing, e.g. a `body[data-slug="index"] { ... }` block that hides sidebars on tablet/mobile and centers the content card at a different width. Delete that block and apply the normal content-page alignment to every page (switch `body:not([data-slug="index"])` selectors to `body[data-slug]`) so the root paper note uses the same content card as section pages.
+
+After fixing all three, confirm in the built HTML that both `/index.html` and a section `index.html` carry the sidebar, header, and graph, with a content card width matching a leaf page.
 
 ## Example: arXiv 2605.06901 HCLLM site
 
