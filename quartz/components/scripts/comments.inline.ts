@@ -161,6 +161,7 @@ document.addEventListener("nav", () => {
   const trigger = drawer.querySelector<HTMLButtonElement>(".comments-trigger")
   const panel = drawer.querySelector<HTMLElement>(".comments-panel")
   const resizeHandle = drawer.querySelector<HTMLElement>(".comments-resize-handle")
+  const sepoAvatar = drawer.querySelector<HTMLImageElement>(".comments-trigger-avatar")
   const closeControls = Array.from(drawer.querySelectorAll<HTMLElement>("[data-comments-close]"))
 
   if (!trigger || !panel) {
@@ -177,6 +178,7 @@ document.addEventListener("nav", () => {
   let resizeStartX = 0
   let resizeStartWidth = 0
   let activeResizePointerId: number | undefined
+  let sepoWaveTimer: number | undefined
 
   const isOpen = () => drawer.classList.contains("is-open")
 
@@ -206,6 +208,26 @@ document.addEventListener("nav", () => {
 
   const toggleDrawer = () => setOpen(!isOpen())
   const closeDrawer = () => setOpen(false)
+
+  const playSepoWave = () => {
+    if (!sepoAvatar || sepoAvatar.classList.contains("is-waving")) {
+      return
+    }
+
+    const stillSrc = sepoAvatar.dataset.stillSrc
+    const waveSrc = sepoAvatar.dataset.waveSrc
+    if (!stillSrc || !waveSrc) {
+      return
+    }
+
+    sepoAvatar.classList.add("is-waving")
+    sepoAvatar.src = waveSrc
+    sepoWaveTimer = window.setTimeout(() => {
+      sepoAvatar.classList.remove("is-waving")
+      sepoAvatar.src = stillSrc
+      sepoWaveTimer = undefined
+    }, 2100)
+  }
 
   const resizeToClientX = (clientX: number) => {
     const delta = resizeStartX - clientX
@@ -281,6 +303,8 @@ document.addEventListener("nav", () => {
   }
 
   trigger.addEventListener("click", toggleDrawer)
+  trigger.addEventListener("pointerenter", playSepoWave)
+  trigger.addEventListener("focus", playSepoWave)
   resizeHandle?.addEventListener("pointerdown", onResizePointerDown)
   resizeHandle?.addEventListener("keydown", onResizeKeyDown)
   for (const control of closeControls) {
@@ -294,6 +318,11 @@ document.addEventListener("nav", () => {
 
   window.addCleanup(() => {
     trigger.removeEventListener("click", toggleDrawer)
+    trigger.removeEventListener("pointerenter", playSepoWave)
+    trigger.removeEventListener("focus", playSepoWave)
+    if (sepoWaveTimer !== undefined) {
+      window.clearTimeout(sepoWaveTimer)
+    }
     resizeHandle?.removeEventListener("pointerdown", onResizePointerDown)
     resizeHandle?.removeEventListener("keydown", onResizeKeyDown)
     for (const control of closeControls) {

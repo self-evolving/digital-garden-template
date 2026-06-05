@@ -141,14 +141,15 @@ Recommended Vercel environment variable:
 
 Giscus comments are disabled by default. To enable them, set `GISCUS_ENABLED=true` and provide all required Giscus identifiers:
 
-| Name                 | Description                                       |
-| -------------------- | ------------------------------------------------- |
-| `GISCUS_REPO`        | Repository that hosts GitHub Discussions.         |
-| `GISCUS_REPO_ID`     | Giscus repository ID.                             |
-| `GISCUS_CATEGORY`    | Discussion category name.                         |
-| `GISCUS_CATEGORY_ID` | Giscus category ID.                               |
-| `GISCUS_MAPPING`     | Optional mapping; defaults to `pathname`.         |
-| `GISCUS_THEME_URL`   | Optional theme base URL for custom Giscus themes. |
+| Name                  | Description                                              |
+| --------------------- | -------------------------------------------------------- |
+| `GISCUS_REPO`         | Repository that hosts GitHub Discussions.                |
+| `GISCUS_REPO_ID`      | Giscus repository ID.                                    |
+| `GISCUS_CATEGORY`     | Discussion category name.                                |
+| `GISCUS_CATEGORY_ID`  | Giscus category ID.                                      |
+| `GISCUS_MAPPING`      | Optional mapping; defaults to `pathname`.                |
+| `GISCUS_THEME_URL`    | Optional theme base URL for custom Giscus themes.        |
+| `GISCUS_TRIGGER_MODE` | Optional trigger style, `pill` or `bot`; default `pill`. |
 
 When enabled, Giscus renders as a fixed **Discuss** control that opens a right-side page discussion drawer instead of taking space at the bottom of the note. The GitHub Discussion still maps to the page according to `GISCUS_MAPPING`.
 
