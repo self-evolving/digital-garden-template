@@ -24,6 +24,7 @@ registerCondition("library-page", (page) => isLibraryPage(page.fileData.slug))
 
 type GiscusMapping = "url" | "title" | "og:title" | "specific" | "number" | "pathname"
 type GiscusInputPosition = "top" | "bottom"
+type GiscusTriggerMode = "pill" | "bot"
 type HypothesisTheme = NonNullable<HypothesisOptions["theme"]>
 
 const giscusRequiredEnv = [
@@ -113,6 +114,7 @@ function giscusComments() {
       darkTheme: envValue("GISCUS_DARK_THEME") ?? "dark",
       themeUrl: envValue("GISCUS_THEME_URL"),
       lang: envValue("GISCUS_LANG") ?? "en",
+      triggerMode: enumEnv<GiscusTriggerMode>("GISCUS_TRIGGER_MODE", ["pill", "bot"], "pill"),
     },
   })
 }
