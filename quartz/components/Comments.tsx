@@ -44,6 +44,9 @@ export default ((opts: Options) => {
     // The drawer (trigger, panel, mascot, widget themes) ships from the Sepo
     // comments service as sepo.js; this component only emits the configuration
     // that comments.inline.ts forwards onto the script tag.
+    // prNumber feeds two consumers under different names: data-pr-number
+    // deep-links the widget's pulls tab, data-preview-pr pins the preview
+    // pill's identity.
     return (
       <div
         class="sepo-embed"

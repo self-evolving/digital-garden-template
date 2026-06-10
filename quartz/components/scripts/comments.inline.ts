@@ -69,7 +69,12 @@ document.addEventListener("nav", () => {
   mountSepo(cfg)
 
   const onThemeChange = () => {
-    ;(window as SepoWindow).sepoComments?.setTheme(themeFor(cfg))
+    const theme = themeFor(cfg)
+    // Keep the pending script tag current too: if the toggle fires before
+    // sepo.js has executed (no sepoComments yet), the script must not boot
+    // with a stale data-theme.
+    document.getElementById("sepo-embed-script")?.setAttribute("data-theme", theme)
+    ;(window as SepoWindow).sepoComments?.setTheme(theme)
   }
   document.addEventListener("themechange", onThemeChange)
   window.addCleanup(() => document.removeEventListener("themechange", onThemeChange))

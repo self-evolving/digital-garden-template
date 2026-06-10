@@ -109,18 +109,35 @@ function giscusComments() {
   // Preview deployments bake the pull request they were built from so the
   // drawer can open directly on that PR's conversation.
   const previewPr = envValue("SEPO_PREVIEW_PR")
-  if (previewPr && !/^[0-9]+$/.test(previewPr)) {
-    throw new Error("SEPO_PREVIEW_PR must be a pull request number")
+  if (previewPr && !/^[1-9][0-9]*$/.test(previewPr)) {
+    throw new Error("SEPO_PREVIEW_PR must be a positive pull request number")
   }
   const prNumber = previewPr ? Number(previewPr) : undefined
+  if (prNumber && !tabs?.includes("pulls")) {
+    // Not fatal: the preview pill still works from the hostname/identity, but
+    // the in-drawer PR deep-link needs the pulls tab.
+    console.warn(
+      `SEPO_PREVIEW_PR=${prNumber} is set but the pulls tab is not enabled (GISCUS_TABS); ` +
+        "the drawer will not deep-link to the pull request.",
+    )
+  }
   const previewBranch = envValue("SEPO_PREVIEW_BRANCH")
   // For local pill testing: sepo.js only shows the pill on preview hostnames,
   // so a localhost build simulates one with SEPO_PREVIEW_DOMAIN=localhost.
   const previewDomain = envValue("SEPO_PREVIEW_DOMAIN")
 
+  const explicitDefaultTab = optionalEnumEnv<GiscusContentTab>(
+    "GISCUS_DEFAULT_TAB",
+    giscusContentTabs,
+  )
+  const enabledTabs: readonly GiscusContentTab[] = tabs ?? ["discussions"]
+  if (explicitDefaultTab && !enabledTabs.includes(explicitDefaultTab)) {
+    throw new Error(
+      `GISCUS_DEFAULT_TAB=${explicitDefaultTab} is not one of the enabled tabs (${enabledTabs.join(", ")})`,
+    )
+  }
   const defaultTab =
-    optionalEnumEnv<GiscusContentTab>("GISCUS_DEFAULT_TAB", giscusContentTabs) ??
-    (prNumber && tabs?.includes("pulls") ? "pulls" : undefined)
+    explicitDefaultTab ?? (prNumber && tabs?.includes("pulls") ? "pulls" : undefined)
 
   return Comments({
     provider: "giscus",
