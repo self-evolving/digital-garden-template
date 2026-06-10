@@ -149,14 +149,15 @@ Giscus comments are disabled by default. To enable them, set `GISCUS_ENABLED=tru
 | `GISCUS_CATEGORY_ID`  | Giscus category ID.                                      |
 | `GISCUS_APP_HOST`     | Optional Giscus service host; defaults to Sepo comments. |
 | `GISCUS_MAPPING`      | Optional mapping; defaults to `pathname`.                |
-| `GISCUS_THEME_URL`    | Optional theme base URL for custom Giscus themes.        |
+| `GISCUS_LIGHT_THEME`  | Optional widget theme name in light mode; `sepo_light`.  |
+| `GISCUS_DARK_THEME`   | Optional widget theme name in dark mode; `sepo_dark`.    |
 | `GISCUS_TRIGGER_MODE` | Optional trigger style, `pill` or `bot`; default `pill`. |
 | `GISCUS_TABS`         | Optional drawer tabs from `discussions,issues,pulls`.    |
 | `GISCUS_DEFAULT_TAB`  | Optional tab shown on load; defaults to the first tab.   |
 | `GISCUS_CONTENT_REPO` | Optional repo browsed by the issues/pulls tabs.          |
 | `SEPO_PREVIEW_PR`     | PR number baked into preview builds; opens that PR tab.  |
 
-When enabled, Giscus renders as a fixed **Discuss** control that opens a right-side page discussion drawer instead of taking space at the bottom of the note. The GitHub Discussion still maps to the page according to `GISCUS_MAPPING`.
+When enabled, the site loads the drawer experience from the Sepo comments service (`sepo.js` on `GISCUS_APP_HOST`): a fixed trigger opens a right-side page discussion drawer instead of taking space at the bottom of the note. The drawer chrome, mascot animation, and the `sepo_light`/`sepo_dark` widget themes are all served by that host, so the template no longer vendors them; the site's own light/dark toggle drives the widget theme. The GitHub Discussion still maps to the page according to `GISCUS_MAPPING`.
 
 The drawer can show extra read-only tabs served by the Sepo comments service: set `GISCUS_TABS=discussions,issues,pulls` to let readers browse the site repository's issues and pull requests next to the page discussion. `GISCUS_CONTENT_REPO` points those tabs at the site's source repository when it differs from `GISCUS_REPO` (which hosts the Discussions). On per-branch preview deployments, baking `SEPO_PREVIEW_PR=<number>` into the build makes the drawer open directly on that pull request's conversation (unless `GISCUS_DEFAULT_TAB` says otherwise).
 
