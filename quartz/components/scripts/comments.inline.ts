@@ -4,6 +4,7 @@ type SepoWindow = Window & {
     open: () => void
     close: () => void
   }
+  __sepoCleanup?: () => void
 }
 
 const getConfig = () => document.querySelector<HTMLElement>(".sepo-embed")
@@ -63,6 +64,14 @@ const mountSepo = (cfg: HTMLElement) => {
 document.addEventListener("nav", () => {
   const cfg = getConfig()
   if (!cfg) {
+    // Pages without comments (frontmatter-disabled, index) must not keep the
+    // previous page's drawer alive across SPA navigation: run the service
+    // runtime's own cleanup and remove its host and script tag.
+    ;(window as SepoWindow).__sepoCleanup?.()
+    for (const node of Array.from(document.querySelectorAll(".sepo-comments"))) {
+      node.remove()
+    }
+    document.getElementById("sepo-embed-script")?.remove()
     return
   }
 
