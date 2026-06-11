@@ -74,6 +74,22 @@ function listEnv(name: string) {
   return items.length > 0 ? items : undefined
 }
 
+function giscusAppHost() {
+  const appHost = envValue("GISCUS_APP_HOST") ?? "https://comment-api.sepo.sh"
+  // The value reaches the browser, where a relative or scheme-less string
+  // would silently resolve against the page origin — fail the build instead.
+  let parsed: URL
+  try {
+    parsed = new URL(appHost)
+  } catch {
+    throw new Error(`GISCUS_APP_HOST must be an absolute URL, got: ${appHost}`)
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new Error(`GISCUS_APP_HOST must use http(s), got: ${appHost}`)
+  }
+  return appHost
+}
+
 function giscusComments() {
   if (!booleanEnv("GISCUS_ENABLED", false)) {
     return undefined
@@ -146,7 +162,7 @@ function giscusComments() {
       repoId,
       category,
       categoryId,
-      appHost: envValue("GISCUS_APP_HOST") ?? "https://comment-api.sepo.sh",
+      appHost: giscusAppHost(),
       mapping: enumEnv<GiscusMapping>(
         "GISCUS_MAPPING",
         ["url", "title", "og:title", "specific", "number", "pathname"],
