@@ -1244,3 +1244,16 @@ body:not([data-slug="index"]) .page > #quartz-body .center {
     }
   }
 }
+
+// Map the site palette onto the Sepo drawer's theming contract: sepo.js
+// renders its chrome in a shadow DOM and reads these custom properties from
+// the host element, so the drawer follows the site's colors — including the
+// light/dark toggle, since Quartz flips the underlying variables.
+.sepo-comments {
+  --sepo-bg: var(--light);
+  --sepo-fg: var(--darkgray);
+  --sepo-heading: var(--dark);
+  --sepo-border: var(--lightgray);
+  --sepo-accent: var(--secondary);
+  --sepo-accent-hover: var(--tertiary);
+}
