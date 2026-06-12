@@ -5,6 +5,9 @@ on:
 
 permissions:
   contents: read
+  # Lets the resolve-discussion-ids step look up the comment widget's
+  # repo/category IDs from names.
+  discussions: read
 
 concurrency:
   group: validate-literature-site-${{ github.ref }}
@@ -27,12 +30,37 @@ jobs:
       - name: Check Quartz site
         run: npm run check
 
-      - name: Build Quartz site
+      # Repo variables are not exported to step env automatically. Forward the
+      # site-config namespaces wholesale so adding a knob never requires a
+      # workflow edit again. Heredoc form keeps multi-line values intact; the
+      # delimiter is random per run so no value can close the block early.
+      - name: Export site configuration variables
         env:
-          HYPOTHESIS_ENABLED: ${{ vars.HYPOTHESIS_ENABLED || 'false' }}
-          HYPOTHESIS_OPEN_SIDEBAR: ${{ vars.HYPOTHESIS_OPEN_SIDEBAR || '' }}
-          HYPOTHESIS_SHOW_HIGHLIGHTS: ${{ vars.HYPOTHESIS_SHOW_HIGHLIGHTS || '' }}
-          HYPOTHESIS_COMMENTS_MODE: ${{ vars.HYPOTHESIS_COMMENTS_MODE || '' }}
-          HYPOTHESIS_GROUPS_ALLOWLIST: ${{ vars.HYPOTHESIS_GROUPS_ALLOWLIST || '' }}
-          HYPOTHESIS_THEME: ${{ vars.HYPOTHESIS_THEME || '' }}
+          REPO_VARS: ${{ toJSON(vars) }}
+        run: |
+          DELIM="SEPO_EOV_$(openssl rand -hex 16)"
+          echo "$REPO_VARS" | jq -r --arg delim "$DELIM" 'to_entries[]
+            | select(.key | test("^(SEPO_COMMENTS_|SEPO_PREVIEW_|HYPOTHESIS_)"))
+            | "\(.key)<<\($delim)\n\(.value)\n\($delim)"' >> "$GITHUB_ENV"
+
+      - name: Set comments build defaults
+        env:
+          DEFAULT_SEPO_COMMENTS_REPO: ${{ github.repository }}
+          DEFAULT_SEPO_COMMENTS_CATEGORY: General
+        run: |
+          {
+            if [[ -z "${SEPO_COMMENTS_REPO:-}" ]]; then
+              echo "SEPO_COMMENTS_REPO=${DEFAULT_SEPO_COMMENTS_REPO}"
+            fi
+            if [[ -z "${SEPO_COMMENTS_CATEGORY:-}" ]]; then
+              echo "SEPO_COMMENTS_CATEGORY=${DEFAULT_SEPO_COMMENTS_CATEGORY}"
+            fi
+          } >> "$GITHUB_ENV"
+
+      # The build itself does no network lookups: this step fills in the
+      # comment widget's GraphQL IDs by name when they are not pinned.
+      - name: Resolve discussion IDs
+        uses: ./.github/actions/resolve-discussion-ids
+
+      - name: Build Quartz site
         run: npm run build
