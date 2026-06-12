@@ -22,20 +22,11 @@ const isLibraryPage = (slug?: string) =>
 
 registerCondition("library-page", (page) => isLibraryPage(page.fileData.slug))
 
-type GiscusMapping = "url" | "title" | "og:title" | "specific" | "number" | "pathname"
-type GiscusInputPosition = "top" | "bottom"
 type GiscusTriggerMode = "pill" | "bot"
 type GiscusContentTab = "discussions" | "issues" | "pulls"
 type HypothesisTheme = NonNullable<HypothesisOptions["theme"]>
 
 const giscusContentTabs: readonly GiscusContentTab[] = ["discussions", "issues", "pulls"]
-
-const giscusRequiredEnv = [
-  "GISCUS_REPO",
-  "GISCUS_REPO_ID",
-  "GISCUS_CATEGORY",
-  "GISCUS_CATEGORY_ID",
-] as const
 
 function envValue(name: string) {
   const value = process.env[name]?.trim()
@@ -97,45 +88,63 @@ function giscusAppHost() {
 }
 
 function giscusComments() {
-  if (!booleanEnv("GISCUS_ENABLED", false)) {
+  // Comments are part of the literature-site product, so they default ON.
+  // An explicit GISCUS_ENABLED=true upgrades missing pieces from a warning
+  // (build continues without comments) to a hard build failure.
+  const explicitlyConfigured = envValue("GISCUS_ENABLED") !== undefined
+  if (!booleanEnv("GISCUS_ENABLED", true)) {
+    return undefined
+  }
+  const unavailable = (reason: string) => {
+    if (explicitlyConfigured) {
+      throw new Error(`GISCUS_ENABLED=true but ${reason}`)
+    }
+    console.warn(`[sepo-comments] disabled: ${reason}`)
     return undefined
   }
 
-  const envConfig = Object.fromEntries(giscusRequiredEnv.map((name) => [name, envValue(name)]))
-  const missing = giscusRequiredEnv.filter((name) => !envConfig[name])
-  if (missing.length > 0) {
-    throw new Error(`GISCUS_ENABLED=true requires: ${missing.join(", ")}`)
+  const repo = envValue("GISCUS_REPO")
+  if (!repo) {
+    return unavailable("GISCUS_REPO is not set")
   }
-
-  const repo = envConfig.GISCUS_REPO as string
-  const repoId = envConfig.GISCUS_REPO_ID as string
-  const category = envConfig.GISCUS_CATEGORY as string
-  const categoryId = envConfig.GISCUS_CATEGORY_ID as string
-
-  if (!repo.includes("/")) {
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) {
     throw new Error("GISCUS_REPO must use the owner/name format")
   }
 
-  const tabs = listEnv("GISCUS_TABS") as GiscusContentTab[] | undefined
-  for (const tab of tabs ?? []) {
+  const category = envValue("GISCUS_CATEGORY")
+  if (!category) {
+    return unavailable("GISCUS_CATEGORY is not set")
+  }
+  const repoId = envValue("GISCUS_REPO_ID")
+  const categoryId = envValue("GISCUS_CATEGORY_ID")
+  if (!repoId || !categoryId) {
+    return unavailable(
+      "GISCUS_REPO_ID/GISCUS_CATEGORY_ID are not set (the shipped workflows resolve " +
+        "them automatically; for local or non-Actions builds pin them - see README)",
+    )
+  }
+
+  // All drawer tabs ship by default; GISCUS_TABS=discussions trims back.
+  const tabs = (listEnv("GISCUS_TABS") as GiscusContentTab[] | undefined) ?? [...giscusContentTabs]
+  for (const tab of tabs) {
     if (!giscusContentTabs.includes(tab)) {
       throw new Error(`GISCUS_TABS must only contain: ${giscusContentTabs.join(", ")}`)
     }
   }
 
   const contentRepo = envValue("GISCUS_CONTENT_REPO")
-  if (contentRepo && !contentRepo.includes("/")) {
+  if (contentRepo && !/^[\w.-]+\/[\w.-]+$/.test(contentRepo)) {
     throw new Error("GISCUS_CONTENT_REPO must use the owner/name format")
   }
 
-  // Preview deployments bake the pull request they were built from so the
-  // drawer can open directly on that PR's conversation.
+  // Preview deployments bake the pull request they were built from through the
+  // fixed SEPO_PREVIEW_* contract prepared by the workflow.
   const previewPr = envValue("SEPO_PREVIEW_PR")
   if (previewPr && !/^[1-9][0-9]*$/.test(previewPr)) {
     throw new Error("SEPO_PREVIEW_PR must be a positive pull request number")
   }
   const prNumber = previewPr ? Number(previewPr) : undefined
-  if (prNumber && !tabs?.includes("pulls")) {
+  if (prNumber && !tabs.includes("pulls")) {
     // Not fatal: the preview pill still works from the hostname/identity, but
     // the in-drawer PR deep-link needs the pulls tab.
     console.warn(
@@ -156,15 +165,17 @@ function giscusComments() {
     "GISCUS_DEFAULT_TAB",
     giscusContentTabs,
   )
-  const enabledTabs: readonly GiscusContentTab[] = tabs ?? ["discussions"]
-  if (explicitDefaultTab && !enabledTabs.includes(explicitDefaultTab)) {
+  if (explicitDefaultTab && !tabs.includes(explicitDefaultTab)) {
     throw new Error(
-      `GISCUS_DEFAULT_TAB=${explicitDefaultTab} is not one of the enabled tabs (${enabledTabs.join(", ")})`,
+      `GISCUS_DEFAULT_TAB=${explicitDefaultTab} is not one of the enabled tabs (${tabs.join(", ")})`,
     )
   }
   const defaultTab =
-    explicitDefaultTab ?? (prNumber && tabs?.includes("pulls") ? "pulls" : undefined)
+    explicitDefaultTab ?? (prNumber && tabs.includes("pulls") ? "pulls" : undefined)
 
+  // The remaining giscus options are Sepo product decisions, not site knobs:
+  // pathname mapping, strict matching, no reactions, bottom composer, Sepo
+  // themes, English UI. Re-expose one as env only when a real site needs it.
   return Comments({
     provider: "giscus",
     options: {
@@ -173,22 +184,14 @@ function giscusComments() {
       category,
       categoryId,
       appHost: giscusAppHost(),
-      mapping: enumEnv<GiscusMapping>(
-        "GISCUS_MAPPING",
-        ["url", "title", "og:title", "specific", "number", "pathname"],
-        "pathname",
-      ),
-      strict: booleanEnv("GISCUS_STRICT", true),
-      reactionsEnabled: booleanEnv("GISCUS_REACTIONS_ENABLED", false),
-      inputPosition: enumEnv<GiscusInputPosition>(
-        "GISCUS_INPUT_POSITION",
-        ["top", "bottom"],
-        "bottom",
-      ),
-      lightTheme: envValue("GISCUS_LIGHT_THEME") ?? "sepo_light",
-      darkTheme: envValue("GISCUS_DARK_THEME") ?? "sepo_dark",
-      lang: envValue("GISCUS_LANG") ?? "en",
-      triggerMode: enumEnv<GiscusTriggerMode>("GISCUS_TRIGGER_MODE", ["pill", "bot"], "pill"),
+      mapping: "pathname",
+      strict: true,
+      reactionsEnabled: false,
+      inputPosition: "bottom",
+      lightTheme: "sepo_light",
+      darkTheme: "sepo_dark",
+      lang: "en",
+      triggerMode: enumEnv<GiscusTriggerMode>("GISCUS_TRIGGER_MODE", ["pill", "bot"], "bot"),
       tabs,
       defaultTab,
       contentRepo: contentRepo as `${string}/${string}` | undefined,
