@@ -83,50 +83,77 @@ jobs:
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
         run: |
           set -euo pipefail
-          TOK=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-                "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sepo-preview" | jq -r '.value')
-          [[ "$TOK" != "null" && -n "$TOK" ]] || { echo "::error::OIDC token fetch failed"; exit 1; }
-          RESP=$(curl -sS -X POST "$SERVER_URL/api/deploy/preview" -H 'Content-Type: application/json' \
-                 --data "$(jq -nc --arg t "$TOK" --argjson a "$ARTIFACT_ID" '{oidc_token:$t,artifact_id:$a,canonical:true}')" \
-                 -w '\n%{http_code}')
-          CODE=$(tail -n1 <<<"$RESP"); BODY=$(sed '$d' <<<"$RESP"); echo "$BODY"
-          [[ "$CODE" == 200 ]] || { echo "::error::canonical deploy failed ($CODE)"; exit 1; }
+
+          retry_sleep() {
+            local attempt="$1"
+            sleep $((2 ** (attempt - 1)))
+          }
+
+          should_retry_http() {
+            local code="$1"
+            [[ "$code" =~ ^(000|408|409|425|429|5[0-9][0-9])$ ]]
+          }
+
+          TOK=""
+          for attempt in 1 2 3; do
+            if OIDC_RESP=$(curl --fail --silent --show-error \
+              -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sepo-preview"); then
+              TOK=$(jq -r '.value // empty' <<<"$OIDC_RESP" 2>/dev/null || true)
+              if [[ -n "$TOK" ]]; then
+                break
+              fi
+            fi
+            if [[ "$attempt" -eq 3 ]]; then
+              echo "::error::OIDC token fetch failed"
+              exit 1
+            fi
+            echo "::warning::OIDC token fetch attempt $attempt failed; retrying"
+            retry_sleep "$attempt"
+          done
+          echo "::add-mask::$TOK"
+
+          PAYLOAD=$(jq -nc --arg t "$TOK" --argjson a "$ARTIFACT_ID" \
+            '{oidc_token:$t,artifact_id:$a,canonical:true}')
+          BODY_FILE=$(mktemp)
+          trap 'rm -f "$BODY_FILE"' EXIT
+          CODE="000"
+          for attempt in 1 2 3; do
+            if CODE=$(curl --silent --show-error -o "$BODY_FILE" -w '%{http_code}' \
+              -X POST "$SERVER_URL/api/deploy/preview" \
+              -H 'Content-Type: application/json' \
+              --data "$PAYLOAD"); then
+              if [[ "$CODE" == 200 ]]; then
+                break
+              fi
+            else
+              CODE="000"
+            fi
+            if [[ "$attempt" -eq 3 ]] || ! should_retry_http "$CODE"; then
+              cat "$BODY_FILE" || true
+              echo "::error::canonical deploy failed ($CODE)"
+              exit 1
+            fi
+            echo "::warning::canonical deploy attempt $attempt failed with HTTP $CODE; retrying"
+            retry_sleep "$attempt"
+          done
+
+          BODY=$(cat "$BODY_FILE")
+          echo "$BODY"
           URL=$(jq -r .url <<<"$BODY")
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "### Canonical site: $URL" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Setup agent runtime
+        if: steps.deploy.outputs.url != ''
+        uses: ./.github/actions/setup-agent-runtime
+
       - name: Publish GitHub deployment URL
-        id: github-deployment
         if: steps.deploy.outputs.url != ''
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           URL: ${{ steps.deploy.outputs.url }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          CREATE_PAYLOAD=$(jq -nc --arg ref "$SHA" '{
-            ref: $ref,
-            environment: "Production",
-            description: "Sepo canonical site",
-            auto_merge: false,
-            required_contexts: [],
-            transient_environment: false,
-            production_environment: true,
-            payload: {source: "sepo-canonical", canonical: true}
-          }')
-          DEPLOYMENT_ID=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/deployments" \
-            --input - --jq .id <<<"$CREATE_PAYLOAD")
-          STATUS_PAYLOAD=$(jq -nc --arg url "$URL" --arg run_url "$RUN_URL" '{
-            state: "success",
-            environment: "Production",
-            target_url: $url,
-            environment_url: $url,
-            log_url: $run_url,
-            description: "Sepo canonical site is ready",
-            auto_inactive: true
-          }')
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/deployments/${DEPLOYMENT_ID}/statuses" \
-            --input - <<<"$STATUS_PAYLOAD"
-          echo "deployment_id=$DEPLOYMENT_ID" >> "$GITHUB_OUTPUT"
-          echo "GitHub deployment: $DEPLOYMENT_ID" >> "$GITHUB_STEP_SUMMARY"
+          ENVIRONMENT: Production
+        run: node .agent/dist/cli/publish-canonical-deployment.js
