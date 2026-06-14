@@ -6,9 +6,9 @@ type Options = {
   provider: "giscus"
   options: {
     repo: `${string}/${string}`
-    repoId: string
-    category: string
-    categoryId: string
+    repoId?: string
+    category?: string
+    categoryId?: string
     appHost?: string
     lightTheme?: string
     darkTheme?: string

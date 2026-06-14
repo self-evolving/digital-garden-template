@@ -116,18 +116,8 @@ function sepoComments() {
   }
 
   const category = envValue("SEPO_COMMENTS_CATEGORY")
-  if (!category) {
-    return unavailable("SEPO_COMMENTS_CATEGORY is not set")
-  }
   const repoId = envValue("SEPO_COMMENTS_REPO_ID")
   const categoryId = envValue("SEPO_COMMENTS_CATEGORY_ID")
-  if (!repoId || !categoryId) {
-    return unavailable(
-      "SEPO_COMMENTS_REPO_ID/SEPO_COMMENTS_CATEGORY_ID are not set (the shipped " +
-        "workflows resolve them automatically; for local or non-Actions builds pin them - " +
-        "see README)",
-    )
-  }
 
   // All drawer tabs ship by default; SEPO_COMMENTS_TABS=discussions trims back.
   const tabs = (listEnv("SEPO_COMMENTS_TABS") as SepoCommentsContentTab[] | undefined) ?? [
@@ -137,6 +127,14 @@ function sepoComments() {
     if (!sepoCommentsContentTabs.includes(tab)) {
       throw new Error(`SEPO_COMMENTS_TABS must only contain: ${sepoCommentsContentTabs.join(", ")}`)
     }
+  }
+
+  const hasDiscussionConfig = Boolean(category && repoId && categoryId)
+  if (tabs.includes("discussions") && !hasDiscussionConfig) {
+    console.warn(
+      "[sepo-comments] discussion IDs are not fully configured; the drawer will still render " +
+        "and Sepo may hide Discussions at runtime, but creating new discussions is disabled.",
+    )
   }
 
   const contentRepo = envValue("SEPO_COMMENTS_CONTENT_REPO")

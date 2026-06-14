@@ -1,12 +1,12 @@
 name: Resolve discussion IDs
 description: >-
-  Resolve the comment widget's SEPO_COMMENTS_REPO_ID / SEPO_COMMENTS_CATEGORY_ID
-  from the fixed SEPO_COMMENTS_REPO and SEPO_COMMENTS_CATEGORY build
-  environment, then export them for Quartz. Pinned ID pairs win and skip the
-  lookup. Every failure is a warning, not an error; Quartz applies the
-  strictness policy based on SEPO_COMMENTS_ENABLED. Requires `discussions: read`
-  on the workflow token. Run this after preparing the SEPO_COMMENTS_*
-  environment and before the build.
+  Resolve the optional Discussions tab's SEPO_COMMENTS_REPO_ID /
+  SEPO_COMMENTS_CATEGORY_ID from the fixed SEPO_COMMENTS_REPO and
+  SEPO_COMMENTS_CATEGORY build environment, then export them for Quartz. Pinned
+  ID pairs win and skip the lookup. Every failure is a warning, not an error;
+  the Sepo drawer can still render Issues/Pulls without Discussion IDs.
+  Requires `discussions: read` on the workflow token. Run this after preparing
+  the SEPO_COMMENTS_* environment and before the build.
 runs:
   using: composite
   steps:
@@ -27,7 +27,7 @@ runs:
         REPO="${SEPO_COMMENTS_REPO:-}"
         CATEGORY="${SEPO_COMMENTS_CATEGORY:-}"
         if [[ -z "$REPO" || -z "$CATEGORY" ]]; then
-          echo "::warning::comments: SEPO_COMMENTS_REPO and SEPO_COMMENTS_CATEGORY must be set before ID resolution"
+          echo "::warning::comments: skipping optional Discussion ID resolution; SEPO_COMMENTS_REPO and SEPO_COMMENTS_CATEGORY are needed only for the Discussions tab"
           exit 0
         fi
         if [[ ! "$REPO" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
@@ -73,7 +73,7 @@ runs:
           exit 0
         fi
         if [[ "$(jq -r '.data.repository.hasDiscussionsEnabled' <<<"$RESULT")" != "true" ]]; then
-          echo "::warning::comments: Discussions are not enabled on ${REPO}"
+          echo "::warning::comments: Discussions are not enabled on ${REPO}; the Sepo drawer can still render Issues/Pulls"
           exit 0
         fi
         REPO_ID=$(jq -r '.data.repository.id' <<<"$RESULT")
