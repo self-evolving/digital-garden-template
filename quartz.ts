@@ -10,6 +10,12 @@ import SepoPageTitle from "./quartz/components/SepoPageTitle"
 import SepoSearch from "./quartz/components/SepoSearch"
 import Comments from "./quartz/components/Comments"
 import Hypothesis, { type Options as HypothesisOptions } from "./quartz/components/Hypothesis"
+import {
+  deriveSepoCommentsDefaultTab,
+  deriveSepoCommentsTabs,
+  sepoCommentsContentTabs,
+  type SepoCommentsContentTab,
+} from "./quartz/util/sepoComments"
 
 const normalizeBaseUrl = (url?: string) => url?.replace(/^https?:\/\//, "").replace(/\/$/, "")
 const siteBaseUrl =
@@ -23,14 +29,7 @@ const isLibraryPage = (slug?: string) =>
 registerCondition("library-page", (page) => isLibraryPage(page.fileData.slug))
 
 type SepoCommentsTriggerMode = "pill" | "bot"
-type SepoCommentsContentTab = "discussions" | "issues" | "pulls"
 type HypothesisTheme = NonNullable<HypothesisOptions["theme"]>
-
-const sepoCommentsContentTabs: readonly SepoCommentsContentTab[] = [
-  "discussions",
-  "issues",
-  "pulls",
-]
 
 function envValue(name: string) {
   const value = process.env[name]?.trim()
@@ -130,12 +129,14 @@ function sepoComments() {
   }
 
   const hasDiscussionConfig = Boolean(category && repoId && categoryId)
-  if (tabs.includes("discussions") && !hasDiscussionConfig) {
-    console.warn(
-      "[sepo-comments] discussion IDs are not fully configured; the drawer will still render " +
-        "and Sepo may hide Discussions at runtime, but creating new discussions is disabled.",
-    )
+  const tabPlan = deriveSepoCommentsTabs({ requestedTabs: tabs, hasDiscussionConfig })
+  if (!tabPlan.ok) {
+    return unavailable(tabPlan.reason)
   }
+  if (tabPlan.warning) {
+    console.warn(`[sepo-comments] ${tabPlan.warning}.`)
+  }
+  const effectiveTabs = tabPlan.tabs
 
   const contentRepo = envValue("SEPO_COMMENTS_CONTENT_REPO")
   if (contentRepo && !/^[\w.-]+\/[\w.-]+$/.test(contentRepo)) {
@@ -149,7 +150,7 @@ function sepoComments() {
     throw new Error("SEPO_PREVIEW_PR must be a positive pull request number")
   }
   const prNumber = previewPr ? Number(previewPr) : undefined
-  if (prNumber && !tabs.includes("pulls")) {
+  if (prNumber && !effectiveTabs.includes("pulls")) {
     // Not fatal: the preview pill still works from the hostname/identity, but
     // the in-drawer PR deep-link needs the pulls tab.
     console.warn(
@@ -170,13 +171,15 @@ function sepoComments() {
     "SEPO_COMMENTS_DEFAULT_TAB",
     sepoCommentsContentTabs,
   )
-  if (explicitDefaultTab && !tabs.includes(explicitDefaultTab)) {
-    throw new Error(
-      `SEPO_COMMENTS_DEFAULT_TAB=${explicitDefaultTab} is not one of the enabled tabs (${tabs.join(", ")})`,
-    )
+  const defaultTabPlan = deriveSepoCommentsDefaultTab({
+    explicitDefaultTab,
+    tabs: effectiveTabs,
+    prNumber,
+  })
+  if (!defaultTabPlan.ok) {
+    return unavailable(defaultTabPlan.reason)
   }
-  const defaultTab =
-    explicitDefaultTab ?? (prNumber && tabs.includes("pulls") ? "pulls" : undefined)
+  const defaultTab = defaultTabPlan.defaultTab
 
   // The remaining widget options are Sepo product decisions, not site knobs:
   // pathname mapping, strict matching, no reactions, bottom composer, Sepo
@@ -201,7 +204,7 @@ function sepoComments() {
         ["pill", "bot"],
         "bot",
       ),
-      tabs,
+      tabs: effectiveTabs,
       defaultTab,
       contentRepo: contentRepo as `${string}/${string}` | undefined,
       prNumber,
