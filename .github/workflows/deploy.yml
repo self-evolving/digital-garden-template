@@ -57,8 +57,8 @@ jobs:
             fi
           } >> "$GITHUB_ENV"
 
-      # The build itself does no network lookups: this step fills in the
-      # comment widget's GraphQL IDs by name when they are not pinned.
+      # The build itself does no network lookups: this step fills in optional
+      # Discussion GraphQL IDs by name when they are not pinned.
       - name: Resolve discussion IDs
         uses: ./.github/actions/resolve-discussion-ids
 

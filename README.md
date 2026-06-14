@@ -146,31 +146,34 @@ lookups. The shipped GitHub Actions workflows prepare that environment before th
 forward matching repository variables, set `SEPO_COMMENTS_REPO` from the workflow repository when
 absent, set `SEPO_COMMENTS_CATEGORY=General` when absent, set `SEPO_PREVIEW_PR` /
 `SEPO_PREVIEW_BRANCH` on pull request previews, then run `resolve-discussion-ids` to fill the
-GraphQL IDs the Sepo/Giscus-compatible widget needs.
+optional GraphQL IDs used by the Discussions tab.
 
-When a piece is missing, such as Discussions being disabled or IDs not being resolvable, the
-default build logs a warning and ships without comments. Setting `SEPO_COMMENTS_ENABLED=true`
-explicitly upgrades those warnings to build failures; `SEPO_COMMENTS_ENABLED=false` opts out
-entirely. Older Giscus-prefixed build variables are not consumed; use the `SEPO_COMMENTS_*` contract.
+`SEPO_COMMENTS_REPO` is the only required comments input. If Discussions are disabled or the
+Discussion IDs cannot be resolved, the default build logs a warning but still ships the Sepo drawer;
+the template removes the Discussions tab from the generated embed when IDs are absent, and the
+comments service can also hide it at runtime when GitHub reports Discussions disabled. Setting
+`SEPO_COMMENTS_ENABLED=true` explicitly upgrades missing or invalid required inputs (such as
+`SEPO_COMMENTS_REPO`) to build failures; `SEPO_COMMENTS_ENABLED=false` opts out entirely. Older
+Giscus-prefixed build variables are not consumed; use the `SEPO_COMMENTS_*` contract.
 
 Documented comments and preview build variables:
 
-| Name                         | Description                                                               |
-| ---------------------------- | ------------------------------------------------------------------------- |
-| `SEPO_COMMENTS_ENABLED`      | Default `true` (best-effort). Explicit `true` = strict; `false` = off.    |
-| `SEPO_COMMENTS_REPO`         | Discussions repository; workflows default it to the current repository.   |
-| `SEPO_COMMENTS_CATEGORY`     | Discussion category name; workflows default it to `General`.              |
-| `SEPO_COMMENTS_REPO_ID`      | Pinned repository ID; skips workflow lookup when paired with category ID. |
-| `SEPO_COMMENTS_CATEGORY_ID`  | Pinned category ID; required outside the shipped GitHub Actions path.     |
-| `SEPO_COMMENTS_TABS`         | Drawer tabs; defaults to all of `discussions,issues,pulls`.               |
-| `SEPO_COMMENTS_DEFAULT_TAB`  | Tab shown on load; defaults to the first tab (`pulls` on PR previews).    |
-| `SEPO_COMMENTS_CONTENT_REPO` | Repository browsed by the issues/pulls tabs when it differs from above.   |
-| `SEPO_COMMENTS_TRIGGER_MODE` | `bot` (mascot, default) or `pill`.                                        |
-| `SEPO_COMMENTS_APP_HOST`     | Sepo comments service host; only for dev/self-hosting.                    |
-| `SEPO_PREVIEW_PR`            | PR number baked into preview builds; set by the preview workflow.         |
-| `SEPO_PREVIEW_BRANCH`        | Branch label shown in the preview pill; set by the preview workflow.      |
-| `SEPO_PREVIEW_DOMAIN`        | Preview apex override; `localhost` simulates locally.                     |
-| `SEPO_PREVIEW_API`           | Preview registry override for the deployment switcher.                    |
+| Name                         | Description                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------ |
+| `SEPO_COMMENTS_ENABLED`      | Default `true` (best-effort). Explicit `true` = strict; `false` = off.         |
+| `SEPO_COMMENTS_REPO`         | Repository used by the drawer; workflows default it to the current repo.       |
+| `SEPO_COMMENTS_CATEGORY`     | Optional Discussion category name; workflows default it to `General`.          |
+| `SEPO_COMMENTS_REPO_ID`      | Optional pinned repo ID for Discussion creation/config lookup.                 |
+| `SEPO_COMMENTS_CATEGORY_ID`  | Optional pinned category ID for Discussion creation/config lookup.             |
+| `SEPO_COMMENTS_TABS`         | Drawer tabs; defaults to all tabs, with `discussions` removed if unconfigured. |
+| `SEPO_COMMENTS_DEFAULT_TAB`  | Tab shown on load; defaults to the first tab (`pulls` on PR previews).         |
+| `SEPO_COMMENTS_CONTENT_REPO` | Repository browsed by the issues/pulls tabs when it differs from above.        |
+| `SEPO_COMMENTS_TRIGGER_MODE` | `bot` (mascot, default) or `pill`.                                             |
+| `SEPO_COMMENTS_APP_HOST`     | Sepo comments service host; only for dev/self-hosting.                         |
+| `SEPO_PREVIEW_PR`            | PR number baked into preview builds; set by the preview workflow.              |
+| `SEPO_PREVIEW_BRANCH`        | Branch label shown in the preview pill; set by the preview workflow.           |
+| `SEPO_PREVIEW_DOMAIN`        | Preview apex override; `localhost` simulates locally.                          |
+| `SEPO_PREVIEW_API`           | Preview registry override for the deployment switcher.                         |
 
 The upstream widget options for mapping, strict matching, reactions, composer position, themes, and
 language are product defaults, not build environment knobs: pathname mapping, strict matching, no
@@ -187,23 +190,38 @@ happen at the service boundary in `sepo.js`, which gates all preview behavior on
 hostname and HTML-escapes the branch label at its render sink.
 
 When enabled, the site loads the drawer experience from the Sepo comments service (`sepo.js` on
-`SEPO_COMMENTS_APP_HOST`): the mascot trigger opens a right-side page discussion drawer instead of
+`SEPO_COMMENTS_APP_HOST`): the mascot trigger opens a right-side repository drawer instead of
 taking space at the bottom of the note. The drawer chrome, mascot animation, and the `sepo_light` /
 `sepo_dark` widget themes are all served by that host, so the template no longer vendors them; the
-site's own light/dark toggle drives the widget theme. Discussions map to pages by pathname.
+site's own light/dark toggle drives the widget theme. When enabled, Discussions map to pages by
+pathname.
 
-The drawer can show read-only tabs served by the Sepo comments service. All three tabs
-(`discussions,issues,pulls`) are enabled by default; set `SEPO_COMMENTS_TABS=discussions` for a
-discussion-only drawer. `SEPO_COMMENTS_CONTENT_REPO` points the issues/pulls tabs at the site's
-source repository when it differs from `SEPO_COMMENTS_REPO` (which hosts the Discussions). On
-per-branch preview deployments the workflow bakes the PR number into `SEPO_PREVIEW_PR`, so the
-drawer opens directly on that pull request's conversation unless `SEPO_COMMENTS_DEFAULT_TAB` says
-otherwise. Existing sites that want the previous floating pill instead of the mascot trigger should
-set `SEPO_COMMENTS_TRIGGER_MODE=pill`.
+The drawer can show tabs served by the Sepo comments service. All three tabs
+(`discussions,issues,pulls`) are enabled by default when Discussion IDs are configured; without
+those IDs, the generated embed removes `discussions` and starts from Issues/Pull requests. The
+comments service also removes the Discussions tab at runtime if GitHub reports Discussions disabled.
+Set `SEPO_COMMENTS_TABS=issues,pulls` to make a no-Discussions drawer explicit, or
+`SEPO_COMMENTS_TABS=discussions` for a discussion-only drawer (requires Discussion IDs). If an
+explicit default tab is removed from the effective tabs, best-effort builds disable the drawer with
+a warning and `SEPO_COMMENTS_ENABLED=true` builds fail. `SEPO_COMMENTS_CONTENT_REPO` points the
+issues/pulls tabs at another repository when it differs from `SEPO_COMMENTS_REPO`. On per-branch
+preview deployments the workflow bakes the PR number into `SEPO_PREVIEW_PR`, so the drawer opens
+directly on that pull request's conversation unless `SEPO_COMMENTS_DEFAULT_TAB` says otherwise.
+Existing sites that want the previous floating pill instead of the mascot trigger should set
+`SEPO_COMMENTS_TRIGGER_MODE=pill`.
 
-Local builds run without a token or network access, so provide the fixed comments contract directly
-and pin the IDs. These identifiers are public widget configuration, not secrets; the public
-`self-evolving/repo-discussions` repository can host Discussions for local testing:
+Local builds run without a token or network access, so provide the fixed comments contract directly.
+For an Issues/Pulls-only drawer, the repository alone is enough:
+
+```bash
+SEPO_COMMENTS_REPO=OWNER/REPO \
+SEPO_COMMENTS_TABS=issues,pulls \
+npm run dev
+```
+
+For the Discussions tab, pin the IDs. These identifiers are public widget configuration, not
+secrets; the public `self-evolving/repo-discussions` repository can host Discussions for local
+testing:
 
 ```bash
 SEPO_COMMENTS_REPO=self-evolving/repo-discussions \
