@@ -29,6 +29,7 @@ const isLibraryPage = (slug?: string) =>
 registerCondition("library-page", (page) => isLibraryPage(page.fileData.slug))
 
 type SepoCommentsTriggerMode = "pill" | "bot"
+type SepoCommentsPreviewSwitcherMode = "hover"
 type HypothesisTheme = NonNullable<HypothesisOptions["theme"]>
 
 function envValue(name: string) {
@@ -166,6 +167,10 @@ function sepoComments() {
   const previewApi = previewApiValue
     ? requireAbsoluteHttpUrl("SEPO_PREVIEW_API", previewApiValue)
     : undefined
+  const previewSwitcher = optionalEnumEnv<SepoCommentsPreviewSwitcherMode>(
+    "SEPO_COMMENTS_PREVIEW_SWITCHER",
+    ["hover"],
+  )
 
   const explicitDefaultTab = optionalEnumEnv<SepoCommentsContentTab>(
     "SEPO_COMMENTS_DEFAULT_TAB",
@@ -211,6 +216,7 @@ function sepoComments() {
       previewBranch,
       previewDomain,
       previewApi,
+      previewSwitcher,
     },
   })
 }

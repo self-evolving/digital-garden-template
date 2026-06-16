@@ -158,22 +158,23 @@ Giscus-prefixed build variables are not consumed; use the `SEPO_COMMENTS_*` cont
 
 Documented comments and preview build variables:
 
-| Name                         | Description                                                                    |
-| ---------------------------- | ------------------------------------------------------------------------------ |
-| `SEPO_COMMENTS_ENABLED`      | Default `true` (best-effort). Explicit `true` = strict; `false` = off.         |
-| `SEPO_COMMENTS_REPO`         | Repository used by the drawer; workflows default it to the current repo.       |
-| `SEPO_COMMENTS_CATEGORY`     | Optional Discussion category name; workflows default it to `General`.          |
-| `SEPO_COMMENTS_REPO_ID`      | Optional pinned repo ID for Discussion creation/config lookup.                 |
-| `SEPO_COMMENTS_CATEGORY_ID`  | Optional pinned category ID for Discussion creation/config lookup.             |
-| `SEPO_COMMENTS_TABS`         | Drawer tabs; defaults to all tabs, with `discussions` removed if unconfigured. |
-| `SEPO_COMMENTS_DEFAULT_TAB`  | Tab shown on load; defaults to the first tab (`pulls` on PR previews).         |
-| `SEPO_COMMENTS_CONTENT_REPO` | Repository browsed by the issues/pulls tabs when it differs from above.        |
-| `SEPO_COMMENTS_TRIGGER_MODE` | `bot` (mascot, default) or `pill`.                                             |
-| `SEPO_COMMENTS_APP_HOST`     | Sepo comments service host; only for dev/self-hosting.                         |
-| `SEPO_PREVIEW_PR`            | PR number baked into preview builds; set by the preview workflow.              |
-| `SEPO_PREVIEW_BRANCH`        | Branch label shown in the preview pill; set by the preview workflow.           |
-| `SEPO_PREVIEW_DOMAIN`        | Preview apex override; `localhost` simulates locally.                          |
-| `SEPO_PREVIEW_API`           | Preview registry override for the deployment switcher.                         |
+| Name                             | Description                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------------ |
+| `SEPO_COMMENTS_ENABLED`          | Default `true` (best-effort). Explicit `true` = strict; `false` = off.         |
+| `SEPO_COMMENTS_REPO`             | Repository used by the drawer; workflows default it to the current repo.       |
+| `SEPO_COMMENTS_CATEGORY`         | Optional Discussion category name; workflows default it to `General`.          |
+| `SEPO_COMMENTS_REPO_ID`          | Optional pinned repo ID for Discussion creation/config lookup.                 |
+| `SEPO_COMMENTS_CATEGORY_ID`      | Optional pinned category ID for Discussion creation/config lookup.             |
+| `SEPO_COMMENTS_TABS`             | Drawer tabs; defaults to all tabs, with `discussions` removed if unconfigured. |
+| `SEPO_COMMENTS_DEFAULT_TAB`      | Tab shown on load; defaults to the first tab (`pulls` on PR previews).         |
+| `SEPO_COMMENTS_CONTENT_REPO`     | Repository browsed by the issues/pulls tabs when it differs from above.        |
+| `SEPO_COMMENTS_TRIGGER_MODE`     | `bot` (mascot, default) or `pill`.                                             |
+| `SEPO_COMMENTS_PREVIEW_SWITCHER` | Set to `hover` to reveal the branch switcher from the main-site bot.           |
+| `SEPO_COMMENTS_APP_HOST`         | Sepo comments service host; only for dev/self-hosting.                         |
+| `SEPO_PREVIEW_PR`                | PR number baked into preview builds; set by the preview workflow.              |
+| `SEPO_PREVIEW_BRANCH`            | Branch label shown in the preview pill; set by the preview workflow.           |
+| `SEPO_PREVIEW_DOMAIN`            | Preview apex override; `localhost` simulates locally.                          |
+| `SEPO_PREVIEW_API`               | Preview registry override for the deployment switcher.                         |
 
 The upstream widget options for mapping, strict matching, reactions, composer position, themes, and
 language are product defaults, not build environment knobs: pathname mapping, strict matching, no
@@ -186,8 +187,10 @@ from the service; use a local checkout of `self-evolving/comment-api` (e.g. `htt
 for development.
 
 `SEPO_PREVIEW_BRANCH` and `SEPO_PREVIEW_DOMAIN` are forwarded verbatim: validation and escaping
-happen at the service boundary in `sepo.js`, which gates all preview behavior on the deployment
-hostname and HTML-escapes the branch label at its render sink.
+happen at the service boundary in `sepo.js`, which gates preview identity on the deployment
+hostname and HTML-escapes the branch label at its render sink. Main/non-preview pages do not show
+the branch switcher unless `SEPO_COMMENTS_PREVIEW_SWITCHER=hover` is set; this opts the mascot into
+a hover/focus reveal while leaving touch taps dedicated to opening the comments drawer.
 
 When enabled, the site loads the drawer experience from the Sepo comments service (`sepo.js` on
 `SEPO_COMMENTS_APP_HOST`): the mascot trigger opens a right-side repository drawer instead of
