@@ -25,6 +25,7 @@ type Options = {
     previewBranch?: string
     previewDomain?: string
     previewApi?: string
+    previewSwitcher?: "hover"
   }
 }
 
@@ -72,6 +73,7 @@ export default ((opts: Options) => {
         data-preview-branch={opts.options.previewBranch}
         data-preview-domain={opts.options.previewDomain}
         data-preview-api={opts.options.previewApi}
+        data-preview-switcher={opts.options.previewSwitcher}
         hidden
       ></div>
     )

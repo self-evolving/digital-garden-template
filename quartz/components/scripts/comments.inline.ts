@@ -37,6 +37,7 @@ const forwardedKeys = [
   "previewBranch",
   "previewDomain",
   "previewApi",
+  "previewSwitcher",
 ] as const
 
 const mountSepo = (cfg: HTMLElement) => {
