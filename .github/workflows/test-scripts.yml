@@ -14,7 +14,16 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install dependencies
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Validate Quartz site
+        run: |
+          set -euo pipefail
+          npm run check
+          npm run build
+
+      - name: Install agent dependencies
         run: |
           set -euo pipefail
           cd .agent
