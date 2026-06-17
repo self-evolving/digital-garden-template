@@ -66,7 +66,7 @@ const mountSepo = (cfg: HTMLElement) => {
 document.addEventListener("nav", () => {
   const cfg = getConfig()
   if (!cfg) {
-    // Pages without comments (frontmatter-disabled, index) must not keep the
+    // Pages without comments (frontmatter-disabled) must not keep the
     // previous page's drawer alive across SPA navigation: run the service
     // runtime's own cleanup and remove its host and script tag.
     ;(window as SepoWindow).__sepoCleanup?.()

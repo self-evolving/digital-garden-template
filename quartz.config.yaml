@@ -267,7 +267,6 @@ plugins:
     layout:
       position: afterBody
       priority: 10
-      condition: library-page
   - source: ./quartz/plugins/local/hypothesis
     enabled: true
     layout:
