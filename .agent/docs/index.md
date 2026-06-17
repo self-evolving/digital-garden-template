@@ -18,15 +18,15 @@ Sepo turns a repository into a **self-evolving repository**: a codebase that can
    - **Issues** are enabled in `Settings > General > Features > Issues`.
    - **Actions** are enabled in `Settings > Actions > General`.
    - The Sepo GitHub App is installed for this repository.
-   - At least one model-provider credential is configured as a repository secret: `OPENAI_API_KEY` for Codex-backed runs, or `CLAUDE_CODE_OAUTH_TOKEN` / `ANTHROPIC_API_KEY` for Claude-backed runs.
-4. Run `Agent / Onboarding / Check Setup` from GitHub Actions. It creates the built-in `agent/*` trigger labels if they are missing and opens or updates a `Sepo setup check` issue with configuration status and copyable test commands.
+   - At least one model-provider credential is configured under `Settings > Secrets and variables > Actions` as a repository secret: `OPENAI_API_KEY` for Codex-backed runs, or `CLAUDE_CODE_OAUTH_TOKEN` / `ANTHROPIC_API_KEY` for Claude-backed runs.
+4. Run `Agent / Onboarding / Check Setup` from GitHub Actions. It creates the built-in `agent/*` trigger labels if they are missing and opens or updates an agent-tracked `Sepo setup check` issue with configuration status and copyable test commands.
 5. Open an issue and mention `@sepo-agent` in the issue body or a comment. After a short delay, the workflow should add an eyes reaction and then post a response.
 
 ### Install into an existing repository
 
 Check [Install into an existing repository](setup/install-existing-repository.md) for the detailed guide.
 
-- **Public repositories:** the quickest path is to open the [Install Sepo into another repository](https://github.com/self-evolving/repo/issues/new?template=install-sepo.yml) issue form in `self-evolving/repo` and paste the target URL.
+- **Public repositories:** the quickest path is to open the [Install Sepo into another repository](https://github.com/self-evolving/repo/issues/new?template=install-sepo.md) issue template in `self-evolving/repo` and paste the target URL.
 - **Private repositories:** run an agent locally, give it access to this source checkout and the private target repository, and ask it to use the `.skills/install-agent` skill so private access stays in your trusted environment.
 
 ## What You Can Ask It To Do
