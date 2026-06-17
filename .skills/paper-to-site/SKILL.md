@@ -195,7 +195,7 @@ If the Quartz config or styles exclude `index` from these components, adjust the
 
 In this template the gating lives in two conditions, both of which drop the root via `slug === "index"`:
 
-- `library-page` (a custom condition in `quartz.ts`) gates the explorer sidebar, the paper page header, and comments.
+- `library-page` (a custom condition in `quartz.ts`) gates the explorer sidebar and the paper page header.
 - the builtin `not-index` gates the graph, backlinks, table of contents, search, page title, and dark-mode toolbar.
 
 Relax both so the root counts as a content page when it hosts a paper. Gate on `type: paper` so a non-paper root keeps its bare-landing behavior:
