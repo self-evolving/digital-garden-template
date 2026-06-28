@@ -38,6 +38,7 @@ const EXPLICIT_ROUTE_COMMANDS = [
   "orchestrate",
   "create-action",
   "add-rubrics",
+  "chat",
   "install",
 ] as const;
 const LABEL_ROUTE_PREFIX = "agent/";
@@ -61,6 +62,10 @@ export interface ImplementIssueMetadata {
   issueTitle: string;
   issueBody: string;
   basePr?: string;
+}
+
+function canonicalizeExplicitRouteCommand(route: string): string {
+  return route === "chat" ? "answer" : route;
 }
 
 function normalizeOptionalBasePr(value: unknown): string {
@@ -165,7 +170,8 @@ export function extractRequestedRouteDecision(body: string, mention: string): Re
   );
   const explicitMatch = sanitized.match(explicitRegex);
   if (explicitMatch) {
-    return { route: explicitMatch[1].toLowerCase(), skill: "" };
+    const route = canonicalizeExplicitRouteCommand(explicitMatch[1].toLowerCase());
+    return { route, skill: "" };
   }
 
   const skillRegex = new RegExp(
@@ -192,7 +198,9 @@ export function buildRequestedRouteDecision(
   requestText: string,
   implementMetadata?: ImplementIssueMetadata | null,
 ): DispatchDecision {
-  const normalizedRoute = String(route || "").trim().toLowerCase();
+  const normalizedRoute = canonicalizeExplicitRouteCommand(
+    String(route || "").trim().toLowerCase(),
+  );
   if (
     normalizedRoute !== "skill" &&
     normalizedRoute !== "unsupported" &&

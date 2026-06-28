@@ -143,6 +143,20 @@ test("extractRequestedRoute detects explicit slash routes after the agent mentio
     extractRequestedRoute("@sepo-agent /add-rubrics capture this preference", "@sepo-agent"),
     "add-rubrics",
   );
+  assert.equal(
+    extractRequestedRoute("@sepo-agent /chat explain this inline", "@sepo-agent"),
+    "answer",
+  );
+});
+
+test("extractRequestedRouteDecision maps chat requests to answer route", () => {
+  assert.deepEqual(
+    extractRequestedRouteDecision("@sepo-agent /Chat please explain", "@sepo-agent"),
+    {
+      route: "answer",
+      skill: "",
+    },
+  );
 });
 
 test("extractRequestedRouteDecision detects mention-based skill requests", () => {
