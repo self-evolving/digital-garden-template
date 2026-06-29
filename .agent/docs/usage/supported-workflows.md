@@ -18,6 +18,7 @@ title: "Supported workflows"
 | `agent-implement.yml` | `workflow_dispatch` | Implementation flow: branch, commit, draft PR; supports `base_branch` or `base_pr` for stacked PRs | Auto |
 | `agent-fix-pr.yml` | `workflow_dispatch`, `workflow_call` | PR fix flow: update existing PR branch, verify, push | Auto |
 | `agent-review.yml` | `workflow_dispatch`, `workflow_call` | Parallel Claude and Codex review with resolved-provider synthesis, captured reviewed-head provenance, plus a separate rubric review comment | Claude + Codex reviewers; configurable synthesis |
+| `agent-review-nudge.yml` | `pull_request_target` opened, reopened, `ready_for_review` | One-time prompt for non-agent PR authors to launch Sepo review when no review signal exists | None |
 | `agent-branch-cleanup.yml` | `pull_request_target.closed` | Event-driven cleanup of merged agent-created branches after retargeting open stacked PRs. Excludes the shared `agent/memory` and `agent/rubrics` branches. | None |
 | `agent-close-stale-issues.yml` | `schedule` (daily), `workflow_dispatch` | Closes open `agent` issues that have had no activity for 30 days by default | None |
 | `agent-daily-summary.yml` | `schedule` (daily, disabled by default), `workflow_dispatch` | Generates a concise repository activity summary and posts it as a Discussion | Auto |
@@ -320,6 +321,19 @@ Label triggers authorize the label applier rather than the issue or pull request
 Skill names are normalized to lowercase, so `agent/s/Release-Notes` resolves to
 `.skills/release-notes/SKILL.md` by default. Skill directories should use
 lowercase names to match consistently across case-sensitive filesystems.
+
+### `agent-review-nudge.yml`
+
+`Agent / Review Nudge` runs on `pull_request_target` for opened, reopened, and
+ready-for-review pull requests. It skips draft PRs and any PR whose head branch
+starts with `agent/`. Before posting, it waits
+`AGENT_REVIEW_NUDGE_DELAY_SECONDS`, defaulting to 180 seconds and capped at 300
+seconds.
+
+The nudge is only a one-time prompt to ask whether the author wants Sepo review.
+It skips when the PR already has or previously received `agent/review`, includes
+`@sepo-agent /review`, has an existing review-nudge marker, or has a
+current-head Sepo review synthesis.
 
 ### `agent-self-approve.yml`
 
