@@ -1,4 +1,4 @@
-name: Validate literature site
+name: Validate garden site
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ permissions:
   discussions: read
 
 concurrency:
-  group: validate-literature-site-${{ github.ref }}
+  group: validate-garden-site-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

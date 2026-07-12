@@ -1,13 +1,13 @@
 # yaml-language-server: $schema=./quartz/plugins/quartz-plugins.schema.json
 configuration:
-  pageTitle: Literature Notes
-  pageTitleSuffix: " | Literature Notes"
+  pageTitle: Digital Garden
+  pageTitleSuffix: " | Digital Garden"
   enableSPA: true
   enablePopovers: true
   analytics:
     provider: plausible
   locale: en-US
-  baseUrl: literature-template.vercel.app
+  baseUrl: digital-garden-template.vercel.app
   ignorePatterns:
     - private
     - templates
@@ -50,18 +50,14 @@ plugins:
       includedProperties:
         - description
         - type
-        - citekey
-        - authors
-        - year
-        - venue
-        - doi
-        - url
         - status
+        - planted
+        - tended
         - tags
         - aliases
       excludedProperties: []
       hidePropertiesView: true
-      delimiters: "---"
+      delimiters: ---
       language: yaml
     order: 5
     layout:
@@ -102,7 +98,7 @@ plugins:
   - source: github:quartz-community/crawl-links
     enabled: true
     options:
-      markdownLinkResolution: relative
+      markdownLinkResolution: shortest
     order: 60
   - source: github:quartz-community/description
     enabled: true
@@ -112,19 +108,6 @@ plugins:
     options:
       renderEngine: katex
     order: 80
-  - source: github:quartz-community/citations
-    enabled: true
-    options:
-      bibliographyFile: ./bibliography.bib
-      suppressBibliography: false
-      linkCitations: true
-    order: 85
-  - source: ./quartz/plugins/local/literature-citations
-    enabled: true
-    options:
-      bibliographyFile: ./bibliography.bib
-      papersRoot: papers
-    order: 86
   - source: github:quartz-community/hard-line-breaks
     enabled: false
     order: 90

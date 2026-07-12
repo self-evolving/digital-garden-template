@@ -140,7 +140,7 @@ const DocsExplorer: QuartzComponent = ({
   const rootActive = currentSlug === docsNavData.root.slug
 
   return (
-    <nav class={classNames(displayClass, "docs-explorer")} aria-label="Literature navigation">
+    <nav class={classNames(displayClass, "docs-explorer")} aria-label="Garden navigation">
       <ul class="docs-nav-root">
         <li class={["docs-root-link", rootActive ? "active" : undefined].filter(Boolean).join(" ")}>
           <a

@@ -17,7 +17,7 @@ const titleCase = (segment: string) =>
 
 const titleFromSlug = (slug: string) => {
   const parts = slug.split("/").filter((part) => part.length > 0 && part !== "index")
-  return titleCase(parts.at(-1) ?? "Literature Notes")
+  return titleCase(parts.at(-1) ?? "Digital Garden")
 }
 
 const displayName = (name: string) => name.replaceAll("-", " ")

@@ -2,13 +2,13 @@ import { FullSlug, resolveRelative } from "../util/path"
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
 import { classNames } from "../util/lang"
 
-const siteTitle = "Literature Notes"
+const siteTitle = "Digital Garden"
 
 const PageTitle: QuartzComponent = ({ fileData, displayClass }: QuartzComponentProps) => {
   const home = resolveRelative(fileData.slug!, "index" as FullSlug)
   return (
     <h2 class={classNames(displayClass, "page-title")}>
-      <a class="site-title-link" href={home} aria-label="Literature notes home">
+      <a class="site-title-link" href={home} aria-label="Digital garden home">
         <span class="site-title-main" aria-hidden="true">
           <span class="site-title-variant site-title-variant-base">{siteTitle}</span>
           <span class="site-title-variant site-title-variant-hand">{siteTitle}</span>

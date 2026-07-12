@@ -21,7 +21,7 @@ const normalizeBaseUrl = (url?: string) => url?.replace(/^https?:\/\//, "").repl
 const siteBaseUrl =
   normalizeBaseUrl(
     process.env.SITE_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL,
-  ) ?? "literature-template.vercel.app"
+  ) ?? "digital-garden-template.vercel.app"
 
 const isLibraryPage = (slug?: string) =>
   Boolean(slug && slug !== "index" && !slug.startsWith("tags/"))
@@ -92,7 +92,7 @@ function sepoCommentsAppHost() {
 }
 
 function sepoComments() {
-  // Comments are part of the literature-site product, so they default ON.
+  // Comments are part of the garden-site product, so they default ON.
   // An explicit SEPO_COMMENTS_ENABLED=true upgrades missing pieces from a
   // warning (build continues without comments) to a hard build failure.
   const explicitlyConfigured = envValue("SEPO_COMMENTS_ENABLED") !== undefined
@@ -239,19 +239,19 @@ function hypothesisAnnotations() {
 const EmptyComponent: QuartzComponent = () => null
 const commentsComponent = sepoComments() ?? EmptyComponent
 const hypothesisComponent = hypothesisAnnotations() ?? EmptyComponent
-const LiteratureComments = (() => commentsComponent) satisfies QuartzComponentConstructor
-const LiteratureAnnotations = (() => hypothesisComponent) satisfies QuartzComponentConstructor
+const SiteComments = (() => commentsComponent) satisfies QuartzComponentConstructor
+const SiteAnnotations = (() => hypothesisComponent) satisfies QuartzComponentConstructor
 
 componentRegistry.register("doc-page-header", DocPageHeader, "local")
 componentRegistry.register("docs-explorer", DocsExplorer, "local")
 componentRegistry.register("footer", SepoFooter, "local")
 componentRegistry.register("Footer", SepoFooter, "local")
 componentRegistry.register("graph", SepoGraph, "local")
-componentRegistry.register("hypothesis", LiteratureAnnotations, "local")
+componentRegistry.register("hypothesis", SiteAnnotations, "local")
 componentRegistry.register("page-title", SepoPageTitle, "local")
 componentRegistry.register("PageTitle", SepoPageTitle, "local")
 componentRegistry.register("search", SepoSearch, "local")
-componentRegistry.register("sepo-comments", LiteratureComments, "local")
+componentRegistry.register("sepo-comments", SiteComments, "local")
 
 const config = await loadQuartzConfig({ baseUrl: siteBaseUrl })
 export default config

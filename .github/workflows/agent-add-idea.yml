@@ -1,14 +1,14 @@
-name: Agent / Add Paper
+name: Agent / Add Idea
 
 on:
   workflow_dispatch:
     inputs:
-      paper:
-        description: "Paper URL, arXiv ID, DOI, title, PDF URL, or BibTeX entry."
+      idea:
+        description: "The idea to plant, in natural language."
         required: true
         type: string
-      additional_request:
-        description: "Optional natural-language request, such as notes to update or connections to add."
+      context:
+        description: "Optional context: where it came from, related notes or topics, links."
         required: false
         default: ""
         type: string
@@ -26,19 +26,18 @@ permissions:
   id-token: write # required for GitHub Actions OIDC broker exchange
 
 concurrency:
-  group: agent-add-paper-${{ github.repository }}
+  group: agent-add-idea-${{ github.repository }}
   cancel-in-progress: false
 
 jobs:
-  add-paper:
+  add-idea:
     if: vars.AGENT_ENABLED != 'false'
     runs-on: ${{ fromJson(vars.AGENT_RUNS_ON || '["ubuntu-latest"]') }}
-    environment: agent-literature
     env:
-      PAPER_INPUT: ${{ inputs.paper }}
-      ADDITIONAL_REQUEST_INPUT: ${{ inputs.additional_request || '' }}
+      IDEA_INPUT: ${{ inputs.idea }}
+      CONTEXT_INPUT: ${{ inputs.context || '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -54,32 +53,11 @@ jobs:
           pat: ${{ secrets.AGENT_PAT }}
           fallback_token: ${{ github.token }}
 
-      - name: Validate literature environment secrets
-        shell: bash
-        env:
-          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
-          S2_API_KEY: ${{ secrets.S2_API_KEY }}
-          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
-        run: |
-          set -euo pipefail
-
-          missing=()
-          for name in SERPER_API_KEY S2_API_KEY JINA_API_KEY; do
-            if [ -z "${!name:-}" ]; then
-              missing+=("$name")
-            fi
-          done
-
-          if [ "${#missing[@]}" -gt 0 ]; then
-            printf 'Missing required agent-literature environment secrets: %s\n' "${missing[*]}" >&2
-            exit 1
-          fi
-
-      - name: Resolve add-paper provider
+      - name: Resolve add-idea provider
         id: provider
         uses: ./.github/actions/resolve-agent-provider
         with:
-          route: add-paper
+          route: add-idea
           default_provider: ${{ vars.AGENT_DEFAULT_PROVIDER || 'auto' }}
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           claude_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -102,9 +80,9 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: node .agent/dist/cli/resolve-implementation-base.js
 
-      - name: Create add-paper branch
+      - name: Create add-idea branch
         env:
-          BRANCH: agent/add-paper/${{ steps.provider.outputs.provider }}-${{ github.run_id }}
+          BRANCH: agent/add-idea/${{ steps.provider.outputs.provider }}-${{ github.run_id }}
           GH_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
           set -euo pipefail
@@ -113,12 +91,6 @@ jobs:
           git -c "http.${GITHUB_SERVER_URL}/.extraheader=AUTHORIZATION: basic ${AUTH_HEADER}" fetch origin "refs/heads/${BASE_BRANCH}"
           git checkout -b "${BRANCH}" FETCH_HEAD
 
-      - name: Setup literature research tooling
-        uses: ./.github/actions/run-skill-setup
-        with:
-          skill: literature-review
-          trusted_ref: "true"
-
       - name: Resolve task timeout
         id: task_timeout
         env:
@@ -126,14 +98,10 @@ jobs:
           ROUTE: implement
         run: node .agent/dist/cli/resolve-task-timeout.js
 
-      - name: Run add-paper agent
+      - name: Run add-idea agent
         id: agent
         timeout-minutes: ${{ fromJson(steps.task_timeout.outputs.minutes || '30') }}
         uses: ./.github/actions/run-agent-task
-        env:
-          SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
-          S2_API_KEY: ${{ secrets.S2_API_KEY }}
-          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
         with:
           agent: ${{ steps.provider.outputs.provider }}
           github_token: ${{ steps.auth.outputs.token }}
@@ -144,7 +112,7 @@ jobs:
           model: ${{ steps.provider.outputs.model }}
           display_model: ${{ vars.AGENT_DISPLAY_MODEL || '' }}
           permission_mode: approve-all
-          prompt: literature-add-paper
+          prompt: garden-add-idea
           route: implement
           memory_ref: ${{ vars.AGENT_MEMORY_REF || 'agent/memory' }}
           memory_policy: ${{ vars.AGENT_MEMORY_POLICY || '' }}
@@ -153,19 +121,19 @@ jobs:
           rubrics_limit: ${{ vars.AGENT_RUBRICS_LIMIT || '10' }}
           session_policy: none
           request_text: |-
-            Add this paper to the literature site:
+            Plant this idea in the garden:
 
-            ${{ env.PAPER_INPUT }}
+            ${{ env.IDEA_INPUT }}
 
-            Additional natural-language request:
-            ${{ env.ADDITIONAL_REQUEST_INPUT }}
+            Additional context:
+            ${{ env.CONTEXT_INPUT }}
           requested_by: ${{ github.actor }}
           source_kind: workflow_dispatch
           target_kind: repository
-          target_number: '0'
+          target_number: "0"
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           reasoning_effort: ${{ steps.provider.outputs.reasoning_effort || 'high' }}
-          workflow: agent-add-paper.yml
+          workflow: agent-add-idea.yml
 
       - name: Verify changes
         if: always()
@@ -215,7 +183,7 @@ jobs:
         env:
           BRANCH: ${{ env.BRANCH }}
           COMMIT_MESSAGE: >-
-            ${{ steps.response.outputs.commit_message || 'feat: add literature paper note' }}
+            ${{ steps.response.outputs.commit_message || 'feat: plant idea note' }}
           GIT_BOT_EMAIL: ${{ vars.AGENT_COMMITTER_EMAIL || '' }}
           GIT_BOT_NAME: ${{ vars.AGENT_COMMITTER_NAME || '' }}
           GH_TOKEN: ${{ steps.auth.outputs.token }}
@@ -232,7 +200,7 @@ jobs:
           ISSUE_NUMBER: ""
           PR_BODY: ${{ steps.response.outputs.pr_body }}
           PR_TITLE: >-
-            ${{ steps.response.outputs.pr_title || 'Add literature paper note' }}
+            ${{ steps.response.outputs.pr_title || 'Plant idea note' }}
           REQUESTED_BY: ${{ github.actor }}
         run: node .agent/dist/cli/create-pr.js
 
@@ -244,7 +212,7 @@ jobs:
           SUMMARY: ${{ steps.response.outputs.summary }}
         run: |
           {
-            echo "## Add Paper"
+            echo "## Add Idea"
             echo
             echo "Status: ${STATUS}"
             if [ -n "${SUMMARY}" ]; then

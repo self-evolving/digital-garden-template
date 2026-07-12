@@ -1,324 +1,56 @@
-# Literature notes template
+# Digital Garden Template
 
-This repository is a minimal Quartz + Sepo template for maintaining a literature site.
+A live digital garden: an Obsidian-style notes vault published as a Quartz
+site and tended through Sepo — ideas arrive as pull requests, previews come
+per branch, and an agent helps you plant, link, and maintain.
 
-The site keeps durable content directly in this repository:
+## The garden model
 
-- `content/papers/` — consolidated notes for individual papers.
-- `content/notes/` — synthesis notes that connect papers around topics, methods, or research questions.
-- `bibliography.bib` — BibTeX entries referenced by paper notes.
+- **Ideas** (`content/ideas/`) — atomic notes, one idea per note, each with
+  a maturity `status`: `seedling` (fresh, may be wrong) → `budding` (tended,
+  taking shape) → `evergreen` (distilled, stable). Frontmatter records
+  `planted` and `tended` dates.
+- **Topics** (`content/topics/`) — maps of content that gather related
+  ideas into curated trails and name what's missing.
+- **Diary** (`content/diary/`) — one dated note per day (`YYYY-MM-DD.md`),
+  append-mostly; durable thoughts get replanted as idea seedlings.
 
-Transient review streams are intentionally not stored as Markdown. The intended direction is to render GitHub-hosted discussions, issues, or comments directly in the site in a future component, similar in spirit to how Giscus embeds GitHub Discussions.
+Notes link Obsidian-style (shortest-path resolution), folders are ordered by
+`_meta.json` manifests, and the graph, backlinks, and popovers come from
+Quartz.
 
-## Content model
+## Sepo routes
 
-### Paper notes
+Open a prefilled issue (or mention `@sepo-agent` anywhere):
 
-Paper notes live under `content/papers/`. Name each paper note after its BibTeX citekey:
+| Route                    | What happens                                                |
+| ------------------------ | ----------------------------------------------------------- |
+| **Add an idea**          | Plants a seedling note, linked into the garden, as a PR     |
+| **Record a diary entry** | Creates or appends today's `content/diary/` note            |
+| **Tend the garden**      | Links orphans, promotes matured notes, refreshes topic maps |
+| **Ask Sepo**             | Discuss anything without changing content                   |
 
-```text
-content/papers/author2026paper.md
-```
-
-Each paper note should include citation-oriented frontmatter:
-
-```yaml
----
-title: "Paper title"
-type: paper
-citekey: author2026paper
-authors:
-  - First Author
-year: 2026
-venue: Example Venue
-url:
-doi:
-status: unread
-tags:
-  - paper
----
-```
-
-Use the `paper` tag as a lightweight type hint. Graph tag nodes stay hidden by default; the template uses this hint together with the `content/papers/` path to render paper page nodes differently from synthesis notes.
-
-Markdown citations such as `[@author2026paper]` still render from the matching BibTeX entry in `bibliography.bib`. The local literature-citations layer then checks whether `content/papers/author2026paper.md` exists. If it does, the rendered citation link opens that paper note and uses Quartz's normal internal-link popover.
-
-The `citekey` frontmatter should match the filename for readability and future validation, but the filename is the canonical citation-to-note mapping. If no matching paper note exists, Quartz keeps the default bibliography-link behavior.
-
-### Synthesis notes
-
-Synthesis notes live under `content/notes/` and capture topic-level understanding across papers:
-
-```yaml
----
-title: "Topic or synthesis title"
-type: note
-tags:
-  - note
-  - synthesis
----
-```
-
-Use the `note` tag as the corresponding lightweight type tag for durable synthesis notes. Additional topical tags such as `synthesis`, `methods`, or `evaluation` are optional.
-
-A synthesis note should link back to the relevant paper notes and make the relationship between papers explicit.
-
-### Navigation manifests and folder ordering
-
-The left navigation is driven by `_meta.json` files next to your notes. Every folder under `content/` that contains Markdown should have a `_meta.json` manifest with a human-readable `label` and a `pages` array of child slugs.
-
-For example, after adding `content/papers/new-paper.md`, add its slug without `.md` to `content/papers/_meta.json`:
-
-```json
-{
-  "label": "Papers",
-  "pages": ["vaswani2017attention", "devlin2019bert", "brown2020language", "new-paper"]
-}
-```
-
-Folder listing pages follow the nearest `_meta.json` `pages` array when it exists. For example, `content/notes/_meta.json` controls the order shown on `/notes/`:
-
-```json
-{
-  "label": "Notes",
-  "pages": ["example-topic", "attention-patterns"]
-}
-```
-
-Entries should omit `.md`. Folder index pages are implicit: keep `index.md` in the folder, but do not list `"index"` in `pages`. For nested folders, add the folder slug to the parent manifest and give the nested folder its own `_meta.json`. Pages not listed in `_meta.json` fall back to the default folder-page sort.
-
-### Graph paper styling
-
-The graph keeps tag nodes hidden by default, but it uses lightweight type hints to style paper nodes differently from synthesis notes:
-
-- paper notes include `paper` and live under `content/papers/`
-- synthesis notes include `note` and live under `content/notes/`
-
-When a note cites or links to a paper page, the paper node appears as a same-size hollow circle with an accent outline. This keeps the graph focused on pages while still making cited papers visually distinct.
+`Agent / Add Idea` and `Agent / Record Diary` are also available as manual
+workflow dispatches with natural-language inputs. Conventions live in
+`.skills/garden/SKILL.md`; agent behavior in [AGENTS.md](AGENTS.md).
 
 ## Local development
 
-Use Node `22.x`:
+Requires Node 22.x.
 
 ```bash
 npm ci
 npm run install-plugins
-npm run dev
+npm run dev            # local preview
+npm run check          # typecheck + formatting
+npm run check:site     # check + plugins + build
 ```
 
-Useful commands:
+## Deployment, previews, and comments
 
-```bash
-npm run check
-npm run check:site
-npm run build
-```
-
-`npm run check` runs the fast TypeScript and formatting checks. `npm run check:site` also
-restores enabled Quartz plugins and builds the static site. `npm run dev` serves the Quartz site
-locally. `npm run build` restores enabled Quartz plugins and writes the static site to `public/`.
-Disabled plugins remain in the config/lockfile for easy opt-in, but they are not restored during
-normal builds.
-
-## Vercel configuration
-
-Import the repository into Vercel with:
-
-- Framework preset: **Other**
-- Install command: `npm ci`
-- Build command: `npm run build`
-- Output directory: `public`
-
-These settings are also captured in `vercel.json`.
-
-Recommended Vercel environment variable:
-
-| Name       | Value                                                                               |
-| ---------- | ----------------------------------------------------------------------------------- |
-| `SITE_URL` | Production domain without protocol, e.g. `literature.example.com` or a Vercel host. |
-
-## Comments and GitHub-backed surfaces
-
-Comments are enabled by default on a best-effort basis. The comments and preview integration only
-consumes the fixed `SEPO_COMMENTS_*`, `SEPO_PREVIEW_*`, and `HYPOTHESIS_*` build environment; it
-does not inspect GitHub, Vercel, or other provider-specific variables and it performs no network
-lookups. The shipped GitHub Actions workflows prepare that environment before the build: they
-forward matching repository variables, set `SEPO_COMMENTS_REPO` from the workflow repository when
-absent, set `SEPO_COMMENTS_CATEGORY=General` when absent, set `SEPO_PREVIEW_PR` /
-`SEPO_PREVIEW_BRANCH` on pull request previews, then run `resolve-discussion-ids` to fill the
-optional GraphQL IDs used by the Discussions tab.
-
-`SEPO_COMMENTS_REPO` is the only required comments input. If Discussions are disabled or the
-Discussion IDs cannot be resolved, the default build logs a warning but still ships the Sepo drawer;
-the template removes the Discussions tab from the generated embed when IDs are absent, and the
-comments service can also hide it at runtime when GitHub reports Discussions disabled. Setting
-`SEPO_COMMENTS_ENABLED=true` explicitly upgrades missing or invalid required inputs (such as
-`SEPO_COMMENTS_REPO`) to build failures; `SEPO_COMMENTS_ENABLED=false` opts out entirely. Older
-Giscus-prefixed build variables are not consumed; use the `SEPO_COMMENTS_*` contract.
-
-Documented comments and preview build variables:
-
-| Name                             | Description                                                                    |
-| -------------------------------- | ------------------------------------------------------------------------------ |
-| `SEPO_COMMENTS_ENABLED`          | Default `true` (best-effort). Explicit `true` = strict; `false` = off.         |
-| `SEPO_COMMENTS_REPO`             | Repository used by the drawer; workflows default it to the current repo.       |
-| `SEPO_COMMENTS_CATEGORY`         | Optional Discussion category name; workflows default it to `General`.          |
-| `SEPO_COMMENTS_REPO_ID`          | Optional pinned repo ID for Discussion creation/config lookup.                 |
-| `SEPO_COMMENTS_CATEGORY_ID`      | Optional pinned category ID for Discussion creation/config lookup.             |
-| `SEPO_COMMENTS_TABS`             | Drawer tabs; defaults to all tabs, with `discussions` removed if unconfigured. |
-| `SEPO_COMMENTS_DEFAULT_TAB`      | Tab shown on load; defaults to the first tab (`pulls` on PR previews).         |
-| `SEPO_COMMENTS_CONTENT_REPO`     | Repository browsed by the issues/pulls tabs when it differs from above.        |
-| `SEPO_COMMENTS_TRIGGER_MODE`     | `bot` (mascot, default) or `pill`.                                             |
-| `SEPO_COMMENTS_PREVIEW_SWITCHER` | Set to `hover` to reveal the branch switcher from the main-site bot.           |
-| `SEPO_COMMENTS_APP_HOST`         | Sepo comments service host; only for dev/self-hosting.                         |
-| `SEPO_PREVIEW_PR`                | PR number baked into preview builds; set by the preview workflow.              |
-| `SEPO_PREVIEW_BRANCH`            | Branch label shown in the preview pill; set by the preview workflow.           |
-| `SEPO_PREVIEW_DOMAIN`            | Preview apex override; `localhost` simulates locally.                          |
-| `SEPO_PREVIEW_API`               | Preview registry override for the deployment switcher.                         |
-
-The upstream widget options for mapping, strict matching, reactions, composer position, themes, and
-language are product defaults, not build environment knobs: pathname mapping, strict matching, no
-reactions, bottom composer, Sepo themes, and English UI.
-
-`SEPO_COMMENTS_APP_HOST` defaults to the Sepo-operated `https://comment-api.sepo-preview.xyz` and
-must be an absolute http(s) URL (the build fails otherwise). The host must serve the Sepo embed
-runtime (`sepo.js`) — plain upstream `https://giscus.app` is not sufficient since the drawer ships
-from the service; use a local checkout of `self-evolving/comment-api` (e.g. `http://localhost:3000`)
-for development.
-
-`SEPO_PREVIEW_BRANCH` and `SEPO_PREVIEW_DOMAIN` are forwarded verbatim: validation and escaping
-happen at the service boundary in `sepo.js`, which gates preview identity on the deployment
-hostname and HTML-escapes the branch label at its render sink. Main/non-preview pages do not show
-the branch switcher unless `SEPO_COMMENTS_PREVIEW_SWITCHER=hover` is set; this opts the mascot into
-a hover/focus reveal while leaving touch taps dedicated to opening the comments drawer.
-
-When enabled, the site loads the drawer experience from the Sepo comments service (`sepo.js` on
-`SEPO_COMMENTS_APP_HOST`): the mascot trigger opens a right-side repository drawer instead of
-taking space at the bottom of the note. The drawer chrome, mascot animation, and the `sepo_light` /
-`sepo_dark` widget themes are all served by that host, so the template no longer vendors them; the
-site's own light/dark toggle drives the widget theme. When enabled, Discussions map to pages by
-pathname.
-
-The drawer can show tabs served by the Sepo comments service. All three tabs
-(`discussions,issues,pulls`) are enabled by default when Discussion IDs are configured; without
-those IDs, the generated embed removes `discussions` and starts from Issues/Pull requests. The
-comments service also removes the Discussions tab at runtime if GitHub reports Discussions disabled.
-Set `SEPO_COMMENTS_TABS=issues,pulls` to make a no-Discussions drawer explicit, or
-`SEPO_COMMENTS_TABS=discussions` for a discussion-only drawer (requires Discussion IDs). If an
-explicit default tab is removed from the effective tabs, best-effort builds disable the drawer with
-a warning and `SEPO_COMMENTS_ENABLED=true` builds fail. `SEPO_COMMENTS_CONTENT_REPO` points the
-issues/pulls tabs at another repository when it differs from `SEPO_COMMENTS_REPO`. On per-branch
-preview deployments the workflow bakes the PR number into `SEPO_PREVIEW_PR`, so the drawer opens
-directly on that pull request's conversation unless `SEPO_COMMENTS_DEFAULT_TAB` says otherwise.
-Existing sites that want the previous floating pill instead of the mascot trigger should set
-`SEPO_COMMENTS_TRIGGER_MODE=pill`.
-
-Local builds run without a token or network access, so provide the fixed comments contract directly.
-For an Issues/Pulls-only drawer, the repository alone is enough:
-
-```bash
-SEPO_COMMENTS_REPO=OWNER/REPO \
-SEPO_COMMENTS_TABS=issues,pulls \
-npm run dev
-```
-
-For the Discussions tab, pin the IDs. These identifiers are public widget configuration, not
-secrets; the public `self-evolving/repo-discussions` repository can host Discussions for local
-testing:
-
-```bash
-SEPO_COMMENTS_REPO=self-evolving/repo-discussions \
-SEPO_COMMENTS_REPO_ID=R_kgDOSjgnjQ \
-SEPO_COMMENTS_CATEGORY=General \
-SEPO_COMMENTS_CATEGORY_ID=DIC_kwDOSjgnjc4C9gaF \
-npm run dev
-```
-
-To print the IDs for any repository once (the same query the workflow step runs):
-
-```bash
-gh api graphql -f owner=OWNER -f name=REPO -f query='query($owner: String!, $name: String!) {
-  repository(owner: $owner, name: $name) {
-    id
-    discussionCategories(first: 25) { nodes { id name } }
-  }
-}'
-```
-
-Hypothesis web annotations are also disabled by default. To let readers annotate rendered pages,
-set the repository or hosting build variable `HYPOTHESIS_ENABLED=true`.
-
-```bash
-gh variable set HYPOTHESIS_ENABLED --body true --repo OWNER/REPO
-```
-
-Optional build-time variables:
-
-| Name                          | Description                                                    |
-| ----------------------------- | -------------------------------------------------------------- |
-| `HYPOTHESIS_OPEN_SIDEBAR`     | Open the Hypothesis sidebar by default; defaults to `false`.   |
-| `HYPOTHESIS_SHOW_HIGHLIGHTS`  | Show public highlights by default; defaults to `true`.         |
-| `HYPOTHESIS_COMMENTS_MODE`    | Use Hypothesis page-note comments mode; defaults to `false`.   |
-| `HYPOTHESIS_GROUPS_ALLOWLIST` | Optional comma-separated list of allowed Hypothesis group IDs. |
-| `HYPOTHESIS_THEME`            | Optional Hypothesis sidebar theme, `classic` or `clean`.       |
-
-Do not put a Hypothesis API token in browser-side configuration. Site visitors should use
-Hypothesis' normal login flow. Agent-facing Hypothesis API access should be added separately as a
-Sepo runtime capability rather than as a site build setting.
-
-This is separate from the future transient-review surface described in issue #65, which should render GitHub content directly rather than committing transient Markdown files.
-
-## Literature workflows
-
-This template includes two opt-in Sepo literature workflows adapted from `self-evolving/literature`:
-
-- `Agent / Daily Literature` (`.github/workflows/agent-literature-daily.yml`) researches recent papers and posts a GitHub Discussion. The Discussion body uses mobile-friendly item cards instead of a giant table, and each item is posted as its own top-level Discussion comment so follow-up can happen per paper/source.
-- `Agent / Add Paper` (`.github/workflows/agent-add-paper.yml`) accepts a paper URL, arXiv ID, DOI, title, PDF URL, or BibTeX entry, plus an optional natural-language additional request such as which synthesis note to update. It opens a PR that updates `bibliography.bib` plus the matching `content/papers/` note.
-
-Both workflows use the `agent-literature` GitHub Environment for research-tool secrets:
-
-```bash
-gh secret set SERPER_API_KEY --env agent-literature --repo OWNER/REPO
-gh secret set S2_API_KEY --env agent-literature --repo OWNER/REPO
-gh secret set JINA_API_KEY --env agent-literature --repo OWNER/REPO
-```
-
-Manual dispatch is available by default. Scheduled daily literature runs are disabled unless the repository variable `AGENT_LITERATURE_DAILY_ENABLED=true` is set.
-
-## Canonical main-branch deployment
-
-Pushes to `main` deploy the built site through `.github/workflows/agent-deploy-site-main.yml`. The workflow builds the site, uploads the `public/` artifact, and asks the Sepo preview server (`preview-api.sepo.sh`) to publish it with `canonical: true`, authenticating with GitHub Actions **OIDC** so no deploy secret lives in the repository. The server verifies that the OIDC ref is the repository's default branch before assigning the stable canonical URL.
-
-After a successful deploy, the workflow publishes a GitHub `Production` deployment status whose environment URL points at the canonical site, so GitHub shows the deployed URL without requiring repository Administration permissions. Updating the repository sidebar homepage/website URL is intentionally left out because GitHub's `Update a repository` API requires a GitHub App or PAT token with repository **Administration: write** permission; the default `GITHUB_TOKEN` is not enough.
-
-Canonical deploys are enabled for public and private repositories. The preview service records the repository visibility at deploy time; private canonical sites are protected by the Sepo gate and require an authorized GitHub session to view.
-
-## Preview deployments
-
-Pull requests can deploy a per-branch preview of the built site through the Sepo preview server, via `.github/workflows/agent-site-preview.yml`. The workflow builds the site, uploads it as an artifact, and asks the server (`preview-api.sepo.sh`) to publish it, authenticating with GitHub Actions **OIDC** so no deploy secrets live in the repository. The preview URL is published as a GitHub Deployment status, so the pull request timeline shows a bot-authored `deployed to Preview` event with a `View deployment` button instead of a generated preview comment. The workflow uses the resolved Sepo auth token for that event when it can create deployments, then falls back to `GITHUB_TOKEN`; the preview is torn down, and matching preview deployments are marked inactive, when the pull request closes.
-
-Which pull requests preview is controlled by the `AGENT_PREVIEW_POLICY` repository variable. Previews now default on for both public and private repositories; set the policy to `off` to disable future preview deploys:
-
-| `AGENT_PREVIEW_POLICY` | Public repo | Private repo |
-| ---------------------- | ----------- | ------------ |
-| unset / `auto`         | preview     | preview      |
-| `all`                  | preview     | preview      |
-| `off`                  | off         | off          |
-
-```bash
-gh variable set AGENT_PREVIEW_POLICY --body off --repo OWNER/REPO
-```
-
-Within an enabled repository:
-
-- Every **agent** pull request (head branch under `agent/`) previews automatically — no label needed.
-- Add the `sepo-preview` label to preview any other **same-repo** pull request. Fork pull requests are never previewed (they cannot mint OIDC tokens).
-- Add the `no-preview` label to skip a pull request that would otherwise preview.
-
-Label and policy changes affect **future** deploys only — they do not retract a preview that is already live. To take a live preview down, **close the pull request** (teardown runs on close). This requires the Sepo GitHub App on the repository (it mints a short-lived token to fetch the build artifact).
-
-Private previews use the Sepo gate: the preview service records the repository visibility at deploy time, and private-repository previews require an authorized GitHub session to view. If this repository is also connected to a platform that builds its own pull-request previews — for example, Vercel's Git integration auto-deploys every PR — enable only one of them to avoid two preview URLs per pull request. Set `AGENT_PREVIEW_POLICY=off` to defer to that platform, or disable the platform's preview deployments to let Sepo own them. Sepo previews are most useful where the repository has no built-in PR previews (such as GitHub Pages) or where you want one consistent preview across many repositories.
-
-## Sepo controls
-
-Sepo workflows can be paused without disabling GitHub Actions globally by setting the repository variable `AGENT_ENABLED=false`. Remove the variable or set it to `true` to allow packaged `agent-*.yml` jobs to run again.
+The template ships the shared Sepo site infrastructure: canonical
+main-branch deploys (`.github/workflows/agent-deploy-site-main.yml`),
+per-branch PR previews (`agent-site-preview.yml`, controlled by
+`AGENT_PREVIEW_POLICY` and the `sepo-preview` label), and the Sepo comments
+drawer (configured through `SEPO_COMMENTS_*` build variables). Set
+`AGENT_ENABLED=false` to pause all agent workflows.
