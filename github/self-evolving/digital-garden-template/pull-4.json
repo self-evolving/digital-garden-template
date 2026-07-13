@@ -1,0 +1,47 @@
+{
+  "author": {
+    "id": "U_kgDOD1qeYw",
+    "is_bot": false,
+    "login": "shannonshen49",
+    "name": "Shannon's Claude"
+  },
+  "baseRefName": "fix/landing-mobile-nav",
+  "body": "Gives the garden template a visual identity distinct from literature-template, which keeps its blue-lavender look. Moss/fern green accents on warm paper (light mode), deep foliage tones (dark mode), Fraunces for headers; body/code fonts unchanged.\n\nThe whole change is theme tokens in `quartz.config.yaml` — `custom.scss` has no hardcoded hues (verified), so shared plumbing stays mergeable across the template family.\n\nVerified with side-by-side headless-Chrome screenshots against literature-template (desktop landing, note page, true-390px mobile emulation) — no layout drift, mobile clean, `npm run check` + build pass.\n\nStacked on #3 (landing/mobile-nav fixes); merge that first.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01KSJ1viQV4pp3hcWo9u5oPV",
+  "closedAt": null,
+  "comments": [
+    {
+      "id": "IC_kwDOTV8CQc8AAAABJ2xdlw",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "Do you want Sepo to review this PR?\n\n<!-- sepo-agent-review-nudge -->\n\nAdd the `agent/review` label or comment `@sepo-agent /review` to launch an agent review.\nFor a preview deployment, add the `sepo-preview` label.",
+      "createdAt": "2026-07-13T09:19:22Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/self-evolving/digital-garden-template/pull/4#issuecomment-4956380567",
+      "viewerDidAuthor": true
+    }
+  ],
+  "createdAt": "2026-07-13T09:15:50Z",
+  "files": [
+    {
+      "path": "quartz.config.yaml",
+      "additions": 19,
+      "deletions": 19,
+      "changeType": "MODIFIED"
+    }
+  ],
+  "headRefName": "design/garden-identity",
+  "labels": [],
+  "mergedAt": null,
+  "number": 4,
+  "reviewDecision": "",
+  "reviews": [],
+  "state": "OPEN",
+  "title": "Garden visual identity: botanical palette + Fraunces headers",
+  "updatedAt": "2026-07-13T09:19:22Z",
+  "url": "https://github.com/self-evolving/digital-garden-template/pull/4"
+}
