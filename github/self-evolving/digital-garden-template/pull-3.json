@@ -1,0 +1,96 @@
+{
+  "author": {
+    "id": "U_kgDOD1qeYw",
+    "is_bot": false,
+    "login": "shannonshen49",
+    "name": "Shannon's Claude"
+  },
+  "baseRefName": "main",
+  "body": "Two things, keeping this repo aligned with the reviewed literature-template stack:\n\n- **Remove review-nudge** (workflow + `post-review-nudge` CLI + `review-nudge.ts` + tests + docs entry): the nudge PR was dropped from the literature-template stack in review (literature-template#46); this repo inherited it from the pre-review stack tip.\n- **Landing page + mobile nav fixes** (mirrors literature-template#49's follow-up commit, from lean `bfbac6b5`/`260ea2b1`/`5ca879f7`): the landing card now shares every other page's width and top alignment — capped content column (`minmax(0, 70rem)`) with a flexible right spacer instead of the index-only 85%-centered single-column layout — and search/darkmode declare array-form placements so the mobile nav bar renders search on its own row and the theme toggle standalone.\n\nVerified locally: `npm run check` and a full site build pass.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01KSJ1viQV4pp3hcWo9u5oPV",
+  "closedAt": null,
+  "comments": [
+    {
+      "id": "IC_kwDOTV8CQc8AAAABJzFS3g",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "Do you want Sepo to review this PR?\n\n<!-- sepo-agent-review-nudge -->\n\nAdd the `agent/review` label or comment `@sepo-agent /review` to launch an agent review.\nFor a preview deployment, add the `sepo-preview` label.",
+      "createdAt": "2026-07-12T19:42:57Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/self-evolving/digital-garden-template/pull/3#issuecomment-4952511198",
+      "viewerDidAuthor": true
+    }
+  ],
+  "createdAt": "2026-07-12T19:39:33Z",
+  "files": [
+    {
+      "path": ".agent/docs/usage/supported-workflows.md",
+      "additions": 0,
+      "deletions": 14,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": ".agent/src/__tests__/post-review-nudge-cli.test.ts",
+      "additions": 0,
+      "deletions": 85,
+      "changeType": "DELETED"
+    },
+    {
+      "path": ".agent/src/__tests__/review-nudge.test.ts",
+      "additions": 0,
+      "deletions": 150,
+      "changeType": "DELETED"
+    },
+    {
+      "path": ".agent/src/cli/post-review-nudge.ts",
+      "additions": 0,
+      "deletions": 160,
+      "changeType": "DELETED"
+    },
+    {
+      "path": ".agent/src/review-nudge.ts",
+      "additions": 0,
+      "deletions": 157,
+      "changeType": "DELETED"
+    },
+    {
+      "path": ".github/workflows/agent-review-nudge.yml",
+      "additions": 0,
+      "deletions": 64,
+      "changeType": "DELETED"
+    },
+    {
+      "path": "quartz.config.yaml",
+      "additions": 20,
+      "deletions": 10,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "quartz/styles/custom.scss",
+      "additions": 17,
+      "deletions": 84,
+      "changeType": "MODIFIED"
+    }
+  ],
+  "headRefName": "fix/landing-mobile-nav",
+  "labels": [
+    {
+      "id": "LA_kwDOTV8CQc8AAAACraSlVQ",
+      "name": "sepo-preview",
+      "description": "Request a Sepo preview deployment for this PR",
+      "color": "1d76db"
+    }
+  ],
+  "mergedAt": null,
+  "number": 3,
+  "reviewDecision": "",
+  "reviews": [],
+  "state": "OPEN",
+  "title": "Landing page grid, mobile nav placements; drop inherited review-nudge",
+  "updatedAt": "2026-07-12T20:02:51Z",
+  "url": "https://github.com/self-evolving/digital-garden-template/pull/3"
+}
