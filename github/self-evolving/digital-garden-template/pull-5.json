@@ -1,0 +1,65 @@
+{
+  "author": {
+    "id": "U_kgDOD1qeYw",
+    "is_bot": false,
+    "login": "shannonshen49",
+    "name": "Shannon's Claude"
+  },
+  "baseRefName": "main",
+  "body": "Mirrors literature-template#37 so the deploy stack stays identical across the template family:\n\n- **deploy-sepo-site action**: bounded retries with backoff for transient HTTP (000/408/409/425/429/5xx) on both the OIDC token fetch and the deploy POST, 30s curl timeouts, temp-file response handling with a cleanup trap, and strict single-line `http(s)` URL validation of the deploy response.\n- **agent-deploy-site-main.yml**: canonical deploys now guarded by `github.ref == 'refs/heads/main'`.\n- **checkout/setup-node v4 → v5** in `deploy.yml`, `agent-deploy-site-main.yml`, `agent-site-preview.yml` (`upload-artifact@v4` is current and stays).\n\nBased on `main` — independent of the #3 → #4 stack. Workflow-validation and shell-check lanes pass (79/79, 15/15).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01KSJ1viQV4pp3hcWo9u5oPV",
+  "closedAt": null,
+  "comments": [
+    {
+      "id": "IC_kwDOTV8CQc8AAAABKRlDcA",
+      "author": {
+        "login": "sepo-agent-app"
+      },
+      "authorAssociation": "NONE",
+      "body": "Do you want Sepo to review this PR?\n\n<!-- sepo-agent-review-nudge -->\n\nAdd the `agent/review` label or comment `@sepo-agent /review` to launch an agent review.\nFor a preview deployment, add the `sepo-preview` label.",
+      "createdAt": "2026-07-15T19:26:47Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [],
+      "url": "https://github.com/self-evolving/digital-garden-template/pull/5#issuecomment-4984488816",
+      "viewerDidAuthor": true
+    }
+  ],
+  "createdAt": "2026-07-15T19:23:19Z",
+  "files": [
+    {
+      "path": ".github/actions/deploy-sepo-site/action.yml",
+      "additions": 57,
+      "deletions": 10,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": ".github/workflows/agent-deploy-site-main.yml",
+      "additions": 3,
+      "deletions": 3,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": ".github/workflows/agent-site-preview.yml",
+      "additions": 2,
+      "deletions": 2,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": ".github/workflows/deploy.yml",
+      "additions": 2,
+      "deletions": 2,
+      "changeType": "MODIFIED"
+    }
+  ],
+  "headRefName": "chore/deploy-hardening",
+  "labels": [],
+  "mergedAt": null,
+  "number": 5,
+  "reviewDecision": "",
+  "reviews": [],
+  "state": "OPEN",
+  "title": "Harden deploy-sepo-site action; deploy workflows to v5 actions",
+  "updatedAt": "2026-07-15T19:26:47Z",
+  "url": "https://github.com/self-evolving/digital-garden-template/pull/5"
+}
