@@ -7,7 +7,7 @@ configuration:
   analytics:
     provider: plausible
   locale: en-US
-  baseUrl: digital-garden-template.vercel.app
+  baseUrl: digital-garden.sepo.site
   ignorePatterns:
     - private
     - templates
