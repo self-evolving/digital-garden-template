@@ -7,7 +7,7 @@
   },
   "baseRefName": "main",
   "body": "Mirrors literature-template#37 so the deploy stack stays identical across the template family:\n\n- **deploy-sepo-site action**: bounded retries with backoff for transient HTTP (000/408/409/425/429/5xx) on both the OIDC token fetch and the deploy POST, 30s curl timeouts, temp-file response handling with a cleanup trap, and strict single-line `http(s)` URL validation of the deploy response.\n- **agent-deploy-site-main.yml**: canonical deploys now guarded by `github.ref == 'refs/heads/main'`.\n- **checkout/setup-node v4 → v5** in `deploy.yml`, `agent-deploy-site-main.yml`, `agent-site-preview.yml` (`upload-artifact@v4` is current and stays).\n\nBased on `main` — independent of the #3 → #4 stack. Workflow-validation and shell-check lanes pass (79/79, 15/15).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01KSJ1viQV4pp3hcWo9u5oPV",
-  "closedAt": null,
+  "closedAt": "2026-07-18T07:38:37Z",
   "comments": [
     {
       "id": "IC_kwDOTV8CQc8AAAABKRlDcA",
@@ -54,12 +54,12 @@
   ],
   "headRefName": "chore/deploy-hardening",
   "labels": [],
-  "mergedAt": null,
+  "mergedAt": "2026-07-18T07:38:37Z",
   "number": 5,
   "reviewDecision": "",
   "reviews": [],
-  "state": "OPEN",
+  "state": "MERGED",
   "title": "Harden deploy-sepo-site action; deploy workflows to v5 actions",
-  "updatedAt": "2026-07-15T19:26:47Z",
+  "updatedAt": "2026-07-18T07:38:45Z",
   "url": "https://github.com/self-evolving/digital-garden-template/pull/5"
 }

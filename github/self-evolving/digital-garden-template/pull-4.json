@@ -5,9 +5,9 @@
     "login": "shannonshen49",
     "name": "Shannon's Claude"
   },
-  "baseRefName": "fix/landing-mobile-nav",
+  "baseRefName": "main",
   "body": "Gives the garden template a visual identity distinct from literature-template, which keeps its blue-lavender look. Moss/fern green accents on warm paper (light mode), deep foliage tones (dark mode), Fraunces for headers; body/code fonts unchanged.\n\nThe whole change is theme tokens in `quartz.config.yaml` — `custom.scss` has no hardcoded hues (verified), so shared plumbing stays mergeable across the template family.\n\nVerified with side-by-side headless-Chrome screenshots against literature-template (desktop landing, note page, true-390px mobile emulation) — no layout drift, mobile clean, `npm run check` + build pass.\n\nStacked on #3 (landing/mobile-nav fixes); merge that first.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01KSJ1viQV4pp3hcWo9u5oPV",
-  "closedAt": null,
+  "closedAt": "2026-07-18T07:38:38Z",
   "comments": [
     {
       "id": "IC_kwDOTV8CQc8AAAABJ2xdlw",
@@ -36,12 +36,12 @@
   ],
   "headRefName": "design/garden-identity",
   "labels": [],
-  "mergedAt": null,
+  "mergedAt": "2026-07-18T07:38:38Z",
   "number": 4,
   "reviewDecision": "",
   "reviews": [],
-  "state": "OPEN",
+  "state": "MERGED",
   "title": "Garden visual identity: botanical palette + Fraunces headers",
-  "updatedAt": "2026-07-13T09:19:22Z",
+  "updatedAt": "2026-07-18T07:38:45Z",
   "url": "https://github.com/self-evolving/digital-garden-template/pull/4"
 }

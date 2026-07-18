@@ -1,0 +1,43 @@
+{
+  "author": {
+    "id": "U_kgDOD1qeYw",
+    "is_bot": false,
+    "login": "shannonshen49",
+    "name": "Shannon's Claude"
+  },
+  "baseRefName": "main",
+  "body": "Byte-mirror of literature-template#51, which is merged and verified live there: site-page condition, left-column components un-gated so the landing shows the sidebar (tag pages keep exactly what they had), docs-explorer on site-page, and the GITHUB_REPOSITORY-gated GitHub icon link in the title card.\n\nVerified locally: check + build pass, landing renders the sidebar with the GitHub icon.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01KSJ1viQV4pp3hcWo9u5oPV\n",
+  "closedAt": "2026-07-18T07:42:52Z",
+  "comments": [],
+  "createdAt": "2026-07-18T07:39:54Z",
+  "files": [
+    {
+      "path": "quartz.config.yaml",
+      "additions": 1,
+      "deletions": 8,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "quartz.ts",
+      "additions": 3,
+      "deletions": 2,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "quartz/components/SepoPageTitle.tsx",
+      "additions": 57,
+      "deletions": 0,
+      "changeType": "MODIFIED"
+    }
+  ],
+  "headRefName": "fix/landing-sidebar-github",
+  "labels": [],
+  "mergedAt": "2026-07-18T07:42:52Z",
+  "number": 6,
+  "reviewDecision": "",
+  "reviews": [],
+  "state": "MERGED",
+  "title": "Landing left sidebar + GitHub repo link (mirror of literature-template #51)",
+  "updatedAt": "2026-07-18T07:42:54Z",
+  "url": "https://github.com/self-evolving/digital-garden-template/pull/6"
+}
