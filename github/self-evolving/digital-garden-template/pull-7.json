@@ -1,0 +1,37 @@
+{
+  "author": {
+    "id": "U_kgDOD1qeYw",
+    "is_bot": false,
+    "login": "shannonshen49",
+    "name": "Shannon's Claude"
+  },
+  "baseRefName": "main",
+  "body": "Replaces the hardcoded `digital-garden-template.vercel.app` (a Vercel project that never existed) with `digital-garden.sepo.site` in `quartz.config.yaml` and the `quartz.ts` fallback — the two spots that bake absolute URLs into sitemap/RSS/og-image output. The alias already resolves (Sepo-gated).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01KSJ1viQV4pp3hcWo9u5oPV",
+  "closedAt": "2026-07-18T19:19:40Z",
+  "comments": [],
+  "createdAt": "2026-07-18T19:16:59Z",
+  "files": [
+    {
+      "path": "quartz.config.yaml",
+      "additions": 1,
+      "deletions": 1,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "quartz.ts",
+      "additions": 1,
+      "deletions": 1,
+      "changeType": "MODIFIED"
+    }
+  ],
+  "headRefName": "fix/base-url",
+  "labels": [],
+  "mergedAt": "2026-07-18T19:19:40Z",
+  "number": 7,
+  "reviewDecision": "",
+  "reviews": [],
+  "state": "MERGED",
+  "title": "Point baseUrl at digital-garden.sepo.site",
+  "updatedAt": "2026-07-18T19:19:42Z",
+  "url": "https://github.com/self-evolving/digital-garden-template/pull/7"
+}
