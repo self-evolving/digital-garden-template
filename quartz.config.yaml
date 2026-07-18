@@ -18,30 +18,30 @@ configuration:
     fontOrigin: googleFonts
     cdnCaching: true
     typography:
-      header: DM Sans
+      header: Fraunces
       body: DM Sans
       code: JetBrains Mono
     colors:
       lightMode:
-        light: "#fbfcff"
-        lightgray: "#eceef8"
-        gray: "#bac2d8"
-        darkgray: "#52576d"
-        dark: "#202337"
-        secondary: "#6d5efc"
-        tertiary: "#3b82f6"
-        highlight: rgba(109, 94, 252, 0.12)
-        textHighlight: "#c7d2fe88"
+        light: "#fafcf7"
+        lightgray: "#e9efe2"
+        gray: "#b1c0a8"
+        darkgray: "#4b5a45"
+        dark: "#212b1c"
+        secondary: "#3a7d44"
+        tertiary: "#6ba368"
+        highlight: rgba(58, 125, 68, 0.11)
+        textHighlight: "#cde8c088"
       darkMode:
-        light: "#11131f"
-        lightgray: "#22263a"
-        gray: "#6f7898"
-        darkgray: "#d7dcef"
-        dark: "#f7f8ff"
-        secondary: "#8b7cff"
-        tertiary: "#60a5fa"
-        highlight: rgba(139, 124, 255, 0.18)
-        textHighlight: "#6366f188"
+        light: "#121712"
+        lightgray: "#212b1e"
+        gray: "#6f8068"
+        darkgray: "#cfdcc8"
+        dark: "#f2f7ee"
+        secondary: "#7fb069"
+        tertiary: "#a3c585"
+        highlight: rgba(127, 176, 105, 0.16)
+        textHighlight: "#4f772d88"
 plugins:
   - source: github:quartz-community/note-properties
     enabled: true
