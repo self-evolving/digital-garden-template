@@ -37,7 +37,7 @@ jobs:
       ENTRY_INPUT: ${{ inputs.entry }}
       DATE_INPUT: ${{ inputs.date || '' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
