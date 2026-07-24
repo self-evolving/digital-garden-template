@@ -1,0 +1,48 @@
+{
+  "author": {
+    "id": "MDQ6VXNlcjIyNTEyODI1",
+    "is_bot": false,
+    "login": "lolipopshock",
+    "name": "Shannon Shen"
+  },
+  "body": "## Problem\n\nSepo records repository visibility at canonical deploy time in both the preview registry (`isPrivate`) and the deployed R2 `META` (`visibility`). Changing a GitHub repository from private to public, or public to private, does not update either snapshot until another canonical deployment happens.\n\nThis can leave a newly public site behind the private-site gate. More importantly, a newly private repository's previously public deployment can remain publicly served until a later deployment.\n\nGitHub exposes repository visibility transitions through the `repository` event actions `publicized` and `privatized`.\n\n## Proposed change\n\nUpdate `.github/workflows/agent-deploy-site-main.yml` to trigger on visibility changes in addition to its existing triggers:\n\n```yaml\non:\n  push:\n    branches: [main]\n  workflow_dispatch:\n  repository:\n    types: [publicized, privatized]\n```\n\nEnsure the deploy job's guard accepts `repository` events while continuing to deploy only the default branch. The canonical deployment should refresh both the Redis registry record and R2 metadata from GitHub's current repository visibility.\n\n## Acceptance criteria\n\n- A `publicized` event automatically runs the canonical deployment and makes the refreshed site public without a manual dispatch.\n- A `privatized` event automatically runs the canonical deployment and gates the refreshed site.\n- Existing default-branch push and manual-dispatch behavior remains intact.\n- The workflow runs from the repository's default branch and preserves existing concurrency behavior.\n- Tests or documentation cover the visibility-event trigger and the expected snapshot-refresh behavior.\n- The implementation considers and documents the exposure window while a `privatized` redeployment is running; if a full rebuild is not sufficiently fail-closed, capture a follow-up for a lightweight visibility-refresh path.\n",
+  "closedAt": null,
+  "comments": [
+    {
+      "id": "IC_kwDOTV8CQc8AAAABLc-NfA",
+      "author": {
+        "login": "lolipopshock"
+      },
+      "authorAssociation": "CONTRIBUTOR",
+      "body": "@sepo-agent /answer",
+      "createdAt": "2026-07-23T21:18:06Z",
+      "includesCreatedEdit": false,
+      "isMinimized": false,
+      "minimizedReason": "",
+      "reactionGroups": [
+        {
+          "content": "EYES",
+          "users": {
+            "totalCount": 1
+          }
+        }
+      ],
+      "url": "https://github.com/self-evolving/digital-garden-template/issues/9#issuecomment-5063544188",
+      "viewerDidAuthor": false
+    }
+  ],
+  "createdAt": "2026-07-23T21:18:05Z",
+  "labels": [
+    {
+      "id": "LA_kwDOTV8CQc8AAAACrVzAkA",
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    }
+  ],
+  "number": 9,
+  "state": "OPEN",
+  "title": "Automatically refresh canonical deployments when repository visibility changes",
+  "updatedAt": "2026-07-23T21:18:06Z",
+  "url": "https://github.com/self-evolving/digital-garden-template/issues/9"
+}
