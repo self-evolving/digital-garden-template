@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "repo_slug": "self-evolving/digital-garden-template",
-  "last_sync_at": "2026-10-08T13:31:36Z",
+  "last_sync_at": "2026-10-08T23:22:10Z",
   "last_activity_at": "2026-10-04T19:56:01Z",
   "cursors": {
-    "issues": "2026-10-08T13:31:36Z",
-    "pulls": "2026-10-08T13:31:36Z",
-    "discussions": "2026-10-08T13:31:36Z",
-    "commits": "2026-10-08T13:31:36Z"
+    "issues": "2026-10-08T23:22:10Z",
+    "pulls": "2026-10-08T23:22:10Z",
+    "discussions": "2026-10-08T23:22:10Z",
+    "commits": "2026-10-08T23:22:10Z"
   },
-  "last_run_url": "https://github.com/self-evolving/digital-garden-template/actions/runs/37784983361",
+  "last_run_url": "https://github.com/self-evolving/digital-garden-template/actions/runs/37858999365",
   "created_at": "2026-07-12T13:57:39.474Z",
-  "updated_at": "2026-10-08T13:31:38.097Z"
+  "updated_at": "2026-10-08T23:22:12.504Z"
 }
